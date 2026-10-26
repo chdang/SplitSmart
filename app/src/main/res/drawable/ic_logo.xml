@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app logo: a cardinal circle with a coin split into white and gold halves. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp"
+    android:height="72dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillColor="#990000"
+        android:pathData="M24,0 A24,24 0 1,1 24,48 A24,24 0 1,1 24,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M22.5,12 A12,12 0 0,0 22.5,36 Z" />
+    <path
+        android:fillColor="#FFCC00"
+        android:pathData="M25.5,12 A12,12 0 0,1 25.5,36 Z" />
+</vector>
