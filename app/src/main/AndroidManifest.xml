@@ -11,6 +11,8 @@
         <activity android:name=".ui.balance.SettleUpActivity" />
         <activity android:name=".ui.balance.TotalGroupBalanceActivity" />
         <activity android:name=".ui.balance.IndividualGroupBalanceActivity" />
+        <activity android:name=".ui.report.HistoryActivity" />
+        <activity android:name=".ui.report.MonthlySummaryActivity" />
     </application>
 
 </manifest>
