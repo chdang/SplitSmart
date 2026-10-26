@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="edit_group">Edit group</string>
+    <string name="group_name">Group name</string>
+    <string name="group_description">Description (optional)</string>
+    <string name="group_members">Members</string>
+    <string name="group_add_members">Add members</string>
+    <string name="group_member_email">Their email</string>
+    <string name="group_members_hint">Add people by the email they signed up with.</string>
+    <string name="group_owner_label">%1$s (owner)</string>
+    <string name="group_remove_email">Remove %1$s</string>
+    <string name="save_changes">Save changes</string>
+    <string name="delete_group">Delete group</string>
+    <string name="delete_group_warning">Deleting the group removes all of its expenses and payments for everyone.</string>
+    <string name="group_delete_title">Delete %1$s?</string>
+    <string name="group_delete_message">All expenses and payments in this group will be deleted for every member. This can\'t be undone.</string>
+    <string name="group_updated">Group updated</string>
+    <string name="group_deleted">Group deleted</string>
+    <string name="only_owner_can_edit">Only the group owner can edit this group</string>
+    <string name="error_member_is_you">You\'re already in the group</string>
+    <string name="error_already_member">This person is already a member</string>
+</resources>

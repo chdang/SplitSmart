@@ -6,7 +6,29 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        android:theme="@style/Theme.SplitSmart">
+        <activity android:name=".ui.balance.SettleUpActivity" />
+        <activity android:name=".ui.balance.TotalGroupBalanceActivity" />
+        <activity android:name=".ui.balance.IndividualGroupBalanceActivity" />
+        <activity android:name=".ui.report.HistoryActivity" />
+        <activity android:name=".ui.report.MonthlySummaryActivity" />
+        <activity android:name=".ui.expense.NewExpenseActivity" />
+        <activity android:name=".ui.expense.EditExpenseActivity" />
+        <activity android:name=".ui.group.EditGroupActivity" />
+        <activity android:name=".ui.group.GroupDetailActivity" />
+        <activity android:name=".ui.profile.ProfileActivity" />
+        <activity android:name=".ui.group.GroupListActivity" />
+        <activity android:name=".ui.group.NewGroupActivity" />
+        <activity
+            android:name=".ui.auth.LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".ui.auth.SignUpActivity" />
     </application>
 
 </manifest>

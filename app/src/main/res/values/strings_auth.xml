@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="login_tagline">Split group costs fairly, without the math.</string>
+    <string name="email">USC email</string>
+    <string name="password">Password</string>
+    <string name="log_in">Log in</string>
+    <string name="create_account">Create an account</string>
+    <string name="demo_login_hint">Demo data is on. Log in as tommy@usc.edu with the password \"password\".</string>
+    <string name="account_created">Account created. Log in to continue.</string>
+
+    <string name="sign_up_title">Create account</string>
+    <string name="full_name">Full name</string>
+    <string name="usc_id">USC ID</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="email_helper">Use your @usc.edu email</string>
+    <string name="usc_id_helper">Your 10-digit USC ID number</string>
+    <string name="password_helper">At least 8 characters</string>
+    <string name="sign_up">Create account</string>
+
+    <string name="error_usc_email">Use an @usc.edu email address</string>
+    <string name="error_usc_id">Enter your 10-digit USC ID</string>
+    <string name="error_password_short">Use at least 8 characters</string>
+    <string name="error_password_mismatch">Passwords don\'t match</string>
+</resources>

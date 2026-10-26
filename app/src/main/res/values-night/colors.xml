@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_primary">#FFB4A8</color>
+    <color name="brand_on_primary">#690100</color>
+    <color name="brand_primary_container">#8C1D12</color>
+    <color name="brand_on_primary_container">#FFDAD4</color>
+    <color name="brand_secondary">#F5BF48</color>
+    <color name="brand_on_secondary">#402D00</color>
+    <color name="brand_secondary_container">#5C4300</color>
+    <color name="brand_on_secondary_container">#FFDF9E</color>
+
+    <color name="money_owed_to_you">#7FD994</color>
+    <color name="money_you_owe">#F2B8B5</color>
+</resources>

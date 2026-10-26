@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Screens give their root view this id so messages can appear above floating buttons. -->
+    <item name="root" type="id" />
+</resources>

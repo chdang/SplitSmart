@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="edit_expense">Edit expense</string>
+    <string name="expense_details">Expense details</string>
+    <string name="expense_read_only">Only %1$s can edit or delete this expense, since they added it.</string>
+    <string name="expense_delete_title">Delete this expense?</string>
+    <string name="expense_delete_message">\"%1$s\" will be removed and everyone\'s balances will update. This can\'t be undone.</string>
+    <string name="expense_updated">Expense updated</string>
+    <string name="expense_deleted">Expense deleted</string>
+</resources>

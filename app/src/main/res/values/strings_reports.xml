@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="history_title">History</string>
+    <string name="history_type_expense">Expense</string>
+    <string name="history_type_payment">Payment</string>
+    <!-- For example "Alex paid you" or "You paid Sam". -->
+    <string name="history_payment">%1$s paid %2$s</string>
+    <string name="history_you_object">you</string>
+    <string name="history_former_member">A former member</string>
+    <string name="history_expense_meta">Paid by %1$s · %2$s</string>
+    <string name="history_empty">Nothing has happened in this group yet.</string>
+
+    <string name="summary_title">Monthly summary</string>
+    <string name="summary_previous_month">Previous month</string>
+    <string name="summary_next_month">Next month</string>
+    <string name="summary_expense_count">Expenses</string>
+    <string name="summary_total_spent">Total spent</string>
+    <string name="summary_by_category">By category</string>
+    <string name="summary_empty">No expenses this month.</string>
+</resources>

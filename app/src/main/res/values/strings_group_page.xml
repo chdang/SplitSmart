@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="group_view_balances">Tap to see who owes whom</string>
+    <string name="group_settle_up">Settle up</string>
+    <string name="group_history">History</string>
+    <string name="group_summary">Summary</string>
+    <string name="group_expenses">Expenses</string>
+    <string name="group_no_expenses">No expenses yet. Tap Add expense to record one.</string>
+
+    <!-- An expense row, for example "Paid by Alex · Oct 12 · Food". -->
+    <string name="expense_paid_by_name">Paid by %1$s</string>
+    <string name="expense_paid_by_you">Paid by you</string>
+    <string name="expense_meta">%1$s · %2$s · %3$s</string>
+    <string name="expense_you_lent">You lent %1$s</string>
+    <string name="expense_you_owe">You owe %1$s</string>
+    <string name="expense_you_paid">You paid</string>
+    <string name="expense_not_involved">Not involved</string>
+</resources>
