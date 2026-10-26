@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A coin split into two halves: white and USC gold. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M51,32 A22,22 0 0,0 51,76 Z" />
+    <path
+        android:fillColor="#FFCC00"
+        android:pathData="M57,32 A22,22 0 0,1 57,76 Z" />
+</vector>

@@ -1,0 +1,22 @@
+# Gradle
+.gradle/
+build/
+
+# Machine-specific settings
+local.properties
+
+# Android Studio
+.idea/
+*.iml
+.navigation/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Signing keys
+*.jks
+*.keystore
