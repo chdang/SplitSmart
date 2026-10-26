@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="balances_title">Balances</string>
+    <string name="balances_you_owe">You owe</string>
+    <string name="balances_youre_owed">You\'re owed</string>
+    <string name="balances_net_owed">Overall, you\'re owed %1$s</string>
+    <string name="balances_net_owe">Overall, you owe %1$s</string>
+    <string name="balances_net_even">You\'re all settled up in this group.</string>
+    <string name="balances_see_individual">See who owes whom</string>
+    <string name="balances_settle_up">Settle up</string>
+
+    <string name="individual_title">Who owes whom</string>
+    <string name="individual_owes_you">Owes you %1$s</string>
+    <string name="individual_you_owe">You owe %1$s</string>
+    <string name="individual_even">Settled up</string>
+    <string name="individual_empty">No one else is in this group yet.</string>
+</resources>

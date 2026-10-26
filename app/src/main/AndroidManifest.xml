@@ -9,6 +9,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SplitSmart">
         <activity android:name=".ui.balance.SettleUpActivity" />
+        <activity android:name=".ui.balance.TotalGroupBalanceActivity" />
+        <activity android:name=".ui.balance.IndividualGroupBalanceActivity" />
     </application>
 
 </manifest>
