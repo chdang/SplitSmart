@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_expense">Add expense</string>
+    <string name="expense_description">What was it for?</string>
+    <string name="expense_paid_by">Paid by</string>
+    <string name="expense_date">Date</string>
+    <string name="expense_category">Category</string>
+    <string name="expense_split_how">How to split it</string>
+    <string name="split_equal">Equally</string>
+    <string name="split_percent">By percent</string>
+    <string name="split_exact">By amount</string>
+    <string name="expense_split_between">Split between</string>
+    <string name="save_expense">Save expense</string>
+    <string name="delete_expense">Delete expense</string>
+    <string name="participant_value_hint">Share</string>
+
+    <!-- The line under the participants that shows whether the split adds up. -->
+    <string name="split_status_pick_people">Pick at least one person to split with</string>
+    <plurals name="split_status_equal">
+        <item quantity="one">Charged to %d person</item>
+        <item quantity="other">Split equally between %d people</item>
+    </plurals>
+    <string name="split_status_percent_done" formatted="false">Adds up to 100%</string>
+    <string name="split_status_percent_left">%1$s left to assign</string>
+    <string name="split_status_percent_over">Over 100%% by %1$s</string>
+    <string name="split_status_enter_total">Enter the amount first</string>
+    <string name="split_status_amount_done">Adds up to %1$s</string>
+    <string name="split_status_amount_left">%1$s left to assign</string>
+    <string name="split_status_amount_over">Over the total by %1$s</string>
+
+    <string name="error_pick_payer">Pick who paid</string>
+    <string name="error_participant_value">Enter a number</string>
+    <string name="error_split_percent_total" formatted="false">The percentages need to add up to 100%</string>
+    <string name="error_split_exact_total">The amounts need to add up to %1$s</string>
+    <string name="expense_added">Expense added</string>
+</resources>

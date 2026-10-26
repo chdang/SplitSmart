@@ -13,6 +13,7 @@
         <activity android:name=".ui.balance.IndividualGroupBalanceActivity" />
         <activity android:name=".ui.report.HistoryActivity" />
         <activity android:name=".ui.report.MonthlySummaryActivity" />
+        <activity android:name=".ui.expense.NewExpenseActivity" />
     </application>
 
 </manifest>
