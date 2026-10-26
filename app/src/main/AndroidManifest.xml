@@ -15,6 +15,7 @@
         <activity android:name=".ui.report.MonthlySummaryActivity" />
         <activity android:name=".ui.expense.NewExpenseActivity" />
         <activity android:name=".ui.expense.EditExpenseActivity" />
+        <activity android:name=".ui.group.EditGroupActivity" />
     </application>
 
 </manifest>
