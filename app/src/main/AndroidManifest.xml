@@ -16,6 +16,7 @@
         <activity android:name=".ui.expense.NewExpenseActivity" />
         <activity android:name=".ui.expense.EditExpenseActivity" />
         <activity android:name=".ui.group.EditGroupActivity" />
+        <activity android:name=".ui.group.GroupDetailActivity" />
     </application>
 
 </manifest>
