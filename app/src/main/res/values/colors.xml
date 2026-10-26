@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand: USC cardinal and gold. Dark mode versions are in values-night/colors.xml. -->
+    <color name="brand_primary">#990000</color>
+    <color name="brand_on_primary">#FFFFFF</color>
+    <color name="brand_primary_container">#FFDAD4</color>
+    <color name="brand_on_primary_container">#410000</color>
+    <color name="brand_secondary">#7A5900</color>
+    <color name="brand_on_secondary">#FFFFFF</color>
+    <color name="brand_secondary_container">#FFDF9E</color>
+    <color name="brand_on_secondary_container">#261A00</color>
+
+    <!-- Money: green when someone owes you, red when you owe. -->
+    <color name="money_owed_to_you">#1B6E33</color>
+    <color name="money_you_owe">#B3261E</color>
+</resources>
