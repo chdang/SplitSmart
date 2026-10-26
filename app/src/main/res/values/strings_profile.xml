@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_title">Profile</string>
+    <string name="profile_name">Name</string>
+    <string name="profile_save_name">Save name</string>
+    <string name="profile_email">Email</string>
+    <string name="profile_usc_id">USC ID</string>
+    <string name="profile_name_updated">Name updated</string>
+    <string name="log_out">Log out</string>
+    <string name="log_out_confirm_title">Log out of SplitSmart?</string>
+    <string name="log_out_confirm_message">You\'ll need your email and password to log back in.</string>
+</resources>
