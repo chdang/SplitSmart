@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="your_groups">Your groups</string>
+    <string name="new_group">New group</string>
+    <string name="groups_empty">You\'re not in any groups yet. Tap New group to start one, or ask a friend to add your email to theirs.</string>
+    <string name="create_group">Create group</string>
+    <string name="new_group_members_hint">Add people by the email they signed up with. You\'re added automatically as the owner.</string>
+</resources>
