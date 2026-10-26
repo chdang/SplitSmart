@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settle_up_title">Record a payment</string>
+    <string name="settle_up_intro">Paid someone back outside the app, like with Venmo or cash? Record it here so everyone\'s balances stay right.</string>
+    <string name="settle_up_receiver">Who did you pay?</string>
+    <string name="settle_up_record">Record payment</string>
+    <string name="settle_up_you_owe">You owe %1$s %2$s</string>
+    <string name="settle_up_they_owe">%1$s owes you %2$s</string>
+    <string name="settle_up_even">You and %1$s are settled up</string>
+    <string name="settle_up_no_one">No one else is in this group yet.</string>
+    <string name="settle_up_pick_receiver">Pick who you paid</string>
+    <string name="settle_up_recorded">Payment recorded</string>
+</resources>
