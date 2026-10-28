@@ -144,7 +144,10 @@ public final class FakeStore {
     }
 
     private String addUser(String name, String email, String uscId) {
-        String id = newId();
+        // Derived from the email rather than random, so it matches the id the seeded database
+        // gives the same account. Login is real while these handlers are still fake, and
+        // without this the real user id would find none of the sample groups below.
+        String id = "u-" + email.substring(0, email.indexOf('@'));
         users.put(id, new User(id, name, email, uscId));
         passwords.put(id, "password");
         return id;

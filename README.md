@@ -11,7 +11,11 @@ Team 02 (DDACK), Project 2.2.
 3. Let Gradle sync finish. If Android Studio offers to upgrade the Android Gradle Plugin, it's safe to accept.
 4. Run the `app` configuration on an emulator or phone with Android 8.0 (API 26) or newer.
 
-Until the real backend is merged, the app runs on fake in-memory data. Log in with `tommy@usc.edu` and the password `password`. Any data you add is lost when the app closes.
+Log in with `tommy@usc.edu` and the password `password`.
+
+Accounts are real: sign-up, login, logout, and the profile name are stored in a SQLite database on the device and survive closing the app. Groups, expenses, and balances still come from fake in-memory data and are lost when the app closes, until roles 3 to 5 merge their handlers.
+
+The database is seeded with five sample accounts (`tommy@`, `alex@`, `sam@`, `jordan@`, and `priya@usc.edu`), all with the password `password`. An account you create through sign-up works, but its group screens are empty until the real group handlers land. To start from an empty database, uninstall the app from the device.
 
 ## Project structure
 
