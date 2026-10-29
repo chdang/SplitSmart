@@ -18,8 +18,16 @@ public final class DefaultUpdateUserNameHandler implements UpdateUserNameHandler
     @Override
     public void updateName(String userId, String name, Callback<User> callback) {
         String trimmedName = name.trim();
+        // Read here because the session is only ever touched on the main thread.
+        User signedIn = sessions.getCurrentUser();
 
         Async.run(() -> {
+            // R5 is "confirm who's logged in, then save the new name". Without this a caller
+            // could rename any account by passing its id, so the check belongs here rather
+            // than relying on the profile screen to pass the right one.
+            if (signedIn == null || !signedIn.getId().equals(userId)) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_LOGGED_IN);
+            }
             if (trimmedName.isEmpty()) {
                 throw new SplitSmartException(SplitSmartException.Code.INVALID_INPUT);
             }
