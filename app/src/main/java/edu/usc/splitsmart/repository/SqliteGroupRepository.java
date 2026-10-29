@@ -2,8 +2,18 @@ package edu.usc.splitsmart.repository;
 
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.UUID;
+
 import java.time.YearMonth;
 import java.util.List;
+import java.time.Instant;
+
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import org.w3c.dom.CDATASection;
 
 import edu.usc.splitsmart.model.Expense;
 import edu.usc.splitsmart.model.Group;
@@ -21,8 +31,9 @@ import edu.usc.splitsmart.model.User;
  */
 public final class SqliteGroupRepository implements GroupRepository {
 
-    private final SplitSmartDatabase database;
+    private static final String[] COLUMNS = {"id", "name", "description", "ownerId", "createdAt"};
 
+    private final SplitSmartDatabase database;
     public SqliteGroupRepository(SplitSmartDatabase database) {
         this.database = database;
     }
@@ -33,58 +44,192 @@ public final class SqliteGroupRepository implements GroupRepository {
 
     @Override
     public void saveGroup(Group group, List<String> memberIds) {
-        throw notImplemented(3);
+        // save group info
+        String id = UUID.randomUUID().toString();
+        ContentValues values = new ContentValues();
+        values.put("id", group.getId());
+        values.put("name", group.getName());
+        values.put("description", group.getDescription());
+        values.put("ownerId", group.getOwnerId());
+        values.put("createdAt", group.getCreatedAt().toEpochMilli());
+        database.getWritableDatabase().insertOrThrow(SplitSmartDatabase.GROUPS, null, values);
+
+        // then add members to group
+        addMembers(group.getId(), memberIds);
     }
 
     @Override
     public void updateGroup(String groupId, String name, String description) {
-        throw notImplemented(3);
+        ContentValues values = new ContentValues();
+        values.put("name", name);
+        values.put("description", description);
+
+        database.getWritableDatabase().update(
+                SplitSmartDatabase.GROUPS,
+                values,
+                "id = ?",
+                new String[]{ groupId }
+        );
     }
 
     @Override
     public void addMembers(String groupId, List<String> userIds) {
-        throw notImplemented(3);
+        SQLiteDatabase db = database.getWritableDatabase();
+        Instant now = Instant.now();
+        db.beginTransaction();
+        try {
+            for (String userId : userIds) {
+                ContentValues values = new ContentValues();
+                values.put("groupId", groupId);
+                values.put("userId", userId);
+                values.put("joinedAt", now.toEpochMilli());
+                db.insertOrThrow(SplitSmartDatabase.GROUP_MEMBERS, null, values);
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     @Override
     public void deleteGroup(String groupId) {
-        throw notImplemented(3);
+        database.getWritableDatabase().delete(
+                SplitSmartDatabase.GROUPS,
+                "id = ?",
+                new String[]{ groupId }
+        );
     }
 
     @Nullable
     @Override
     public Group findGroupById(String groupId) {
-        throw notImplemented(3);
+        try (Cursor c = database.getReadableDatabase().query(
+                SplitSmartDatabase.GROUPS, null, "id = ?",
+                new String[]{ groupId },
+                null, null, null)) {
+            return c.moveToFirst() ? readGroup(c) : null;
+        }
     }
 
     @Override
     public List<Group> findGroupsByUser(String userId) {
-        throw notImplemented(3);
+        List<Group> groups = new ArrayList<>();
+
+        String sql = "SELECT g.* FROM " + SplitSmartDatabase.GROUPS + " g " +
+                "JOIN " + SplitSmartDatabase.GROUP_MEMBERS + " gm ON gm.groupId = g.id " +
+                "WHERE gm.userId = ? " +
+                "ORDER BY g.createdAt DESC";
+
+        try (Cursor c = database.getReadableDatabase().rawQuery(sql, new String[]{ userId })) {
+            while (c.moveToNext()) {
+                groups.add(readGroup(c));
+            }
+        }
+
+        return groups;
     }
 
     @Override
     public List<User> findMembers(String groupId) {
-        throw notImplemented(3);
+        List<User> users = new ArrayList<>();
+
+        String sql = "SELECT u.* FROM " + SplitSmartDatabase.USERS + " u " +
+                "JOIN " + SplitSmartDatabase.GROUP_MEMBERS + " gm ON gm.userId = u.id " +
+                "WHERE gm.groupId = ? " +
+                "ORDER BY gm.joinedAt DESC";
+
+        try (Cursor c = database.getReadableDatabase().rawQuery(sql, new String[]{ groupId })) {
+            while (c.moveToNext()) {
+                users.add(readUser(c));
+            }
+        }
+
+        return users;
     }
 
     @Override
     public boolean isMember(String groupId, String userId) {
-        throw notImplemented(3);
+        try (Cursor c = database.getReadableDatabase().query(
+                SplitSmartDatabase.GROUP_MEMBERS,
+                new String[]{ "userId" },            // any column works, you only need to know if a row exists
+                "groupId = ? AND userId = ?",
+                new String[]{ groupId, userId },
+                null, null, null,
+                "1")) {                              // LIMIT 1
+            return c.moveToFirst();
+        }
     }
 
     @Override
     public boolean isOwner(String groupId, String userId) {
-        throw notImplemented(3);
+        try (Cursor c = database.getReadableDatabase().query(
+                SplitSmartDatabase.GROUPS,
+                new String[]{ "id" },
+                "id = ? AND ownerId = ?",
+                new String[]{ groupId, userId },
+                null, null, null,
+                "1")) {
+            return c.moveToFirst();
+        }
     }
 
     @Override
     public void saveSettlement(Settlement settlement) {
-        throw notImplemented(3);
+        String id = UUID.randomUUID().toString();
+        ContentValues values = new ContentValues();
+        values.put("groupId", settlement.getGroupId());
+        values.put("recorderId", settlement.getRecorderId());
+        values.put("payerId", settlement.getPayerId());
+        values.put("receiverId", settlement.getReceiverId());
+        values.put("amountCents", settlement.getAmountCents());
+        values.put("settledAt", settlement.getSettledAt().toEpochMilli());
+        database.getWritableDatabase().insertOrThrow(SplitSmartDatabase.SETTLEMENTS, null, values);
     }
 
     @Override
     public List<Settlement> findSettlementsByGroup(String groupId) {
-        throw notImplemented(3);
+        List<Settlement> settlements = new ArrayList<>();
+        try (Cursor c = database.getReadableDatabase().query(
+                SplitSmartDatabase.SETTLEMENTS,
+                null,
+                "groupId = ?",
+                new String[]{ groupId },
+                null, null, null)) {
+            while(c.moveToNext()) {
+                settlements.add(readSettlement(c));
+            }
+            return settlements;
+        }
+    }
+
+    // helper to map cursor to group object
+    private Group readGroup(Cursor c) {
+        String id = c.getString(c.getColumnIndexOrThrow("id"));
+        String name = c.getString(c.getColumnIndexOrThrow("name"));
+        String description = c.getString(c.getColumnIndexOrThrow("description"));
+        String ownerId = c.getString(c.getColumnIndexOrThrow("ownerId"));
+        Instant createdAt = Instant.ofEpochMilli(
+                c.getLong(c.getColumnIndexOrThrow("createdAt")));
+
+        return  new Group(id, name, description, ownerId, createdAt);
+    }
+
+    private User readUser(Cursor c) {
+        return new User(c.getString(0), c.getString(1), c.getString(2),
+                c.getString(3));
+    }
+
+    private Settlement readSettlement(Cursor c) {
+        String id = c.getString(c.getColumnIndexOrThrow("id"));
+        String groupId = c.getString(c.getColumnIndexOrThrow("groupId"));
+        String recorderId = c.getString(c.getColumnIndexOrThrow("recorderId"));
+        String payerId = c.getString(c.getColumnIndexOrThrow("payerId"));
+        String receiverId = c.getString(c.getColumnIndexOrThrow("receiverId"));
+        Long amountCents = c.getLong(c.getColumnIndexOrThrow("amountCents"));
+        Instant settledAt = Instant.ofEpochMilli(
+                c.getLong(c.getColumnIndexOrThrow("settledAt")));
+
+        return new Settlement(id, groupId, recorderId, payerId, receiverId, amountCents, settledAt);
     }
 
     // -------------------------------------------------------------------------------------

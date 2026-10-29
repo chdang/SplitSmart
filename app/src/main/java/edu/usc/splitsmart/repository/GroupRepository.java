@@ -23,6 +23,7 @@ import edu.usc.splitsmart.model.User;
  */
 public interface GroupRepository {
 
+
     // -------------------------------------------------------------------------------------
     // Role 3: groups, membership, settlements
     // -------------------------------------------------------------------------------------
