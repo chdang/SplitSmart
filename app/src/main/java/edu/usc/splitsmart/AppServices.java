@@ -8,6 +8,7 @@ import edu.usc.splitsmart.fake.FakeMemberAuthenticationHandler;
 import edu.usc.splitsmart.fake.FakeStore;
 import edu.usc.splitsmart.fake.FakeUserGroupBalanceHandler;
 import edu.usc.splitsmart.logic.DefaultGroupHandler;
+import edu.usc.splitsmart.logic.DefaultMemberAuthenticationHandler;
 import edu.usc.splitsmart.logic.DefaultSessionHandler;
 import edu.usc.splitsmart.logic.DefaultUpdateUserNameHandler;
 import edu.usc.splitsmart.logic.DefaultUserSignUpHandler;
@@ -67,8 +68,9 @@ public final class AppServices {
         userNames = new DefaultUpdateUserNameHandler(users, sessions);
 
         groupHandler = new DefaultGroupHandler(users, groups);
+        membership = new DefaultMemberAuthenticationHandler(groups);
+
         FakeStore fakeStore = new FakeStore();
-        membership = new FakeMemberAuthenticationHandler(fakeStore);
         expenses = new FakeExpenseHandler(fakeStore);
         balances = new FakeUserGroupBalanceHandler(fakeStore);
     }
