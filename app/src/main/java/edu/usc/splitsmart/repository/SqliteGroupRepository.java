@@ -13,8 +13,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import org.w3c.dom.CDATASection;
-
 import edu.usc.splitsmart.model.Expense;
 import edu.usc.splitsmart.model.Group;
 import edu.usc.splitsmart.model.Settlement;
@@ -43,19 +41,21 @@ public final class SqliteGroupRepository implements GroupRepository {
     // -------------------------------------------------------------------------------------
 
     @Override
-    public void saveGroup(Group group, List<String> memberIds) {
+    public Group saveGroup(String name, String description, String ownerId, Instant createdAt, List<String> memberIds) {
         // save group info
         String id = UUID.randomUUID().toString();
         ContentValues values = new ContentValues();
-        values.put("id", group.getId());
-        values.put("name", group.getName());
-        values.put("description", group.getDescription());
-        values.put("ownerId", group.getOwnerId());
-        values.put("createdAt", group.getCreatedAt().toEpochMilli());
+        values.put("id", id);
+        values.put("name", name);
+        values.put("description", description);
+        values.put("ownerId", ownerId);
+        values.put("createdAt", createdAt.toEpochMilli());
         database.getWritableDatabase().insertOrThrow(SplitSmartDatabase.GROUPS, null, values);
 
         // then add members to group
-        addMembers(group.getId(), memberIds);
+        addMembers(id, memberIds);
+
+        return new Group(id, name, description, ownerId, createdAt);
     }
 
     @Override
@@ -174,16 +174,19 @@ public final class SqliteGroupRepository implements GroupRepository {
     }
 
     @Override
-    public void saveSettlement(Settlement settlement) {
+    public Settlement saveSettlement(String groupId, String recorderId, String payerId, String receiverId, Long amountCents, Instant settledAt) {
         String id = UUID.randomUUID().toString();
         ContentValues values = new ContentValues();
-        values.put("groupId", settlement.getGroupId());
-        values.put("recorderId", settlement.getRecorderId());
-        values.put("payerId", settlement.getPayerId());
-        values.put("receiverId", settlement.getReceiverId());
-        values.put("amountCents", settlement.getAmountCents());
-        values.put("settledAt", settlement.getSettledAt().toEpochMilli());
+        values.put("id", id);
+        values.put("groupId", groupId);
+        values.put("recorderId", recorderId);
+        values.put("payerId", payerId);
+        values.put("receiverId", receiverId);
+        values.put("amountCents", amountCents);
+        values.put("settledAt", settledAt.toEpochMilli());
         database.getWritableDatabase().insertOrThrow(SplitSmartDatabase.SETTLEMENTS, null, values);
+
+        return new Settlement(id, groupId, recorderId, payerId, receiverId, amountCents, settledAt);
     }
 
     @Override
