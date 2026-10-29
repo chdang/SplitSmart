@@ -55,7 +55,7 @@ public interface GroupRepository {
     boolean isOwner(String groupId, String userId);
 
     /** Records a payment one member made to another outside the app (R16). */
-    Settlement saveSettlement(String groupId, String recorderId, String payerId, String receiverId, Long amountCents, Instant settledAt);
+    Settlement saveSettlement(String groupId, String recorderId, String payerId, String receiverId, long amountCents, Instant settledAt);
 
     /** Every settlement in the group. Role 5 nets these against the expenses. */
     List<Settlement> findSettlementsByGroup(String groupId);

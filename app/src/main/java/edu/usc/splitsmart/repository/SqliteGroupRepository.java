@@ -29,8 +29,6 @@ import edu.usc.splitsmart.model.User;
  */
 public final class SqliteGroupRepository implements GroupRepository {
 
-    private static final String[] COLUMNS = {"id", "name", "description", "ownerId", "createdAt"};
-
     private final SplitSmartDatabase database;
     public SqliteGroupRepository(SplitSmartDatabase database) {
         this.database = database;
@@ -174,7 +172,7 @@ public final class SqliteGroupRepository implements GroupRepository {
     }
 
     @Override
-    public Settlement saveSettlement(String groupId, String recorderId, String payerId, String receiverId, Long amountCents, Instant settledAt) {
+    public Settlement saveSettlement(String groupId, String recorderId, String payerId, String receiverId, long amountCents, Instant settledAt) {
         String id = UUID.randomUUID().toString();
         ContentValues values = new ContentValues();
         values.put("id", id);
@@ -228,7 +226,7 @@ public final class SqliteGroupRepository implements GroupRepository {
         String recorderId = c.getString(c.getColumnIndexOrThrow("recorderId"));
         String payerId = c.getString(c.getColumnIndexOrThrow("payerId"));
         String receiverId = c.getString(c.getColumnIndexOrThrow("receiverId"));
-        Long amountCents = c.getLong(c.getColumnIndexOrThrow("amountCents"));
+        long amountCents = c.getLong(c.getColumnIndexOrThrow("amountCents"));
         Instant settledAt = Instant.ofEpochMilli(
                 c.getLong(c.getColumnIndexOrThrow("settledAt")));
 
