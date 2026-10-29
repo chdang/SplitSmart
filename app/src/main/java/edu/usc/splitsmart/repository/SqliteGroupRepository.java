@@ -57,7 +57,7 @@ public final class SqliteGroupRepository implements GroupRepository {
     }
 
     @Override
-    public void updateGroup(String groupId, String name, String description) {
+    public Group updateGroup(String groupId, String name, String description) {
         ContentValues values = new ContentValues();
         values.put("name", name);
         values.put("description", description);
@@ -68,6 +68,8 @@ public final class SqliteGroupRepository implements GroupRepository {
                 "id = ?",
                 new String[]{ groupId }
         );
+
+        return findGroupById(groupId);
     }
 
     @Override
@@ -134,7 +136,7 @@ public final class SqliteGroupRepository implements GroupRepository {
         String sql = "SELECT u.* FROM " + SplitSmartDatabase.USERS + " u " +
                 "JOIN " + SplitSmartDatabase.GROUP_MEMBERS + " gm ON gm.userId = u.id " +
                 "WHERE gm.groupId = ? " +
-                "ORDER BY gm.joinedAt DESC";
+                "ORDER BY gm.joinedAt ASC";
 
         try (Cursor c = database.getReadableDatabase().rawQuery(sql, new String[]{ groupId })) {
             while (c.moveToNext()) {

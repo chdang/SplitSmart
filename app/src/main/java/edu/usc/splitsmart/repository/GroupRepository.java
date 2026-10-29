@@ -33,7 +33,7 @@ public interface GroupRepository {
     Group saveGroup(String name, String description, String ownerId, Instant createdAt, List<String> memberIds);
 
     /** Changes the name and description of an existing group (R18). */
-    void updateGroup(String groupId, String name, String description);
+    Group updateGroup(String groupId, String name, String description);
 
     /** Adds members to a group. Ids that are already members are left alone (R18). */
     void addMembers(String groupId, List<String> userIds);
