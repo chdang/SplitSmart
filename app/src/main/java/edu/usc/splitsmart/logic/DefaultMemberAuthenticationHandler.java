@@ -2,7 +2,6 @@ package edu.usc.splitsmart.logic;
 
 import java.util.List;
 
-import edu.usc.splitsmart.model.Group;
 import edu.usc.splitsmart.model.User;
 import edu.usc.splitsmart.repository.GroupRepository;
 
