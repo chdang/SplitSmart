@@ -46,8 +46,8 @@ public final class SqliteGroupRepository implements GroupRepository {
         values.put("id", id);
         values.put("name", name);
         values.put("description", description);
-        values.put("ownerId", ownerId);
-        values.put("createdAt", createdAt.toEpochMilli());
+        values.put("owner_id", ownerId);
+        values.put("created_at", createdAt.toEpochMilli());
         database.getWritableDatabase().insertOrThrow(SplitSmartDatabase.GROUPS, null, values);
 
         // then add members to group
@@ -80,9 +80,9 @@ public final class SqliteGroupRepository implements GroupRepository {
         try {
             for (String userId : userIds) {
                 ContentValues values = new ContentValues();
-                values.put("groupId", groupId);
-                values.put("userId", userId);
-                values.put("joinedAt", now.toEpochMilli());
+                values.put("group_id", groupId);
+                values.put("user_id", userId);
+                values.put("joined_at", now.toEpochMilli());
                 db.insertOrThrow(SplitSmartDatabase.GROUP_MEMBERS, null, values);
             }
             db.setTransactionSuccessful();
@@ -116,9 +116,9 @@ public final class SqliteGroupRepository implements GroupRepository {
         List<Group> groups = new ArrayList<>();
 
         String sql = "SELECT g.* FROM " + SplitSmartDatabase.GROUPS + " g " +
-                "JOIN " + SplitSmartDatabase.GROUP_MEMBERS + " gm ON gm.groupId = g.id " +
-                "WHERE gm.userId = ? " +
-                "ORDER BY g.createdAt DESC";
+                "JOIN " + SplitSmartDatabase.GROUP_MEMBERS + " gm ON gm.group_id = g.id " +
+                "WHERE gm.user_id = ? " +
+                "ORDER BY g.created_at DESC";
 
         try (Cursor c = database.getReadableDatabase().rawQuery(sql, new String[]{ userId })) {
             while (c.moveToNext()) {
@@ -134,9 +134,9 @@ public final class SqliteGroupRepository implements GroupRepository {
         List<User> users = new ArrayList<>();
 
         String sql = "SELECT u.* FROM " + SplitSmartDatabase.USERS + " u " +
-                "JOIN " + SplitSmartDatabase.GROUP_MEMBERS + " gm ON gm.userId = u.id " +
-                "WHERE gm.groupId = ? " +
-                "ORDER BY gm.joinedAt ASC";
+                "JOIN " + SplitSmartDatabase.GROUP_MEMBERS + " gm ON gm.user_id = u.id " +
+                "WHERE gm.group_id = ? " +
+                "ORDER BY gm.joined_at ASC";
 
         try (Cursor c = database.getReadableDatabase().rawQuery(sql, new String[]{ groupId })) {
             while (c.moveToNext()) {
@@ -152,7 +152,7 @@ public final class SqliteGroupRepository implements GroupRepository {
         try (Cursor c = database.getReadableDatabase().query(
                 SplitSmartDatabase.GROUP_MEMBERS,
                 new String[]{ "userId" },            // any column works, you only need to know if a row exists
-                "groupId = ? AND userId = ?",
+                "group_id = ? AND user_id = ?",
                 new String[]{ groupId, userId },
                 null, null, null,
                 "1")) {                              // LIMIT 1
@@ -165,7 +165,7 @@ public final class SqliteGroupRepository implements GroupRepository {
         try (Cursor c = database.getReadableDatabase().query(
                 SplitSmartDatabase.GROUPS,
                 new String[]{ "id" },
-                "id = ? AND ownerId = ?",
+                "id = ? AND owner_id = ?",
                 new String[]{ groupId, userId },
                 null, null, null,
                 "1")) {
@@ -178,12 +178,12 @@ public final class SqliteGroupRepository implements GroupRepository {
         String id = UUID.randomUUID().toString();
         ContentValues values = new ContentValues();
         values.put("id", id);
-        values.put("groupId", groupId);
-        values.put("recorderId", recorderId);
-        values.put("payerId", payerId);
-        values.put("receiverId", receiverId);
-        values.put("amountCents", amountCents);
-        values.put("settledAt", settledAt.toEpochMilli());
+        values.put("group_id", groupId);
+        values.put("recorder_id", recorderId);
+        values.put("payer_id", payerId);
+        values.put("receiver_id", receiverId);
+        values.put("amount_cents", amountCents);
+        values.put("settled_at", settledAt.toEpochMilli());
         database.getWritableDatabase().insertOrThrow(SplitSmartDatabase.SETTLEMENTS, null, values);
 
         return new Settlement(id, groupId, recorderId, payerId, receiverId, amountCents, settledAt);
@@ -195,7 +195,7 @@ public final class SqliteGroupRepository implements GroupRepository {
         try (Cursor c = database.getReadableDatabase().query(
                 SplitSmartDatabase.SETTLEMENTS,
                 null,
-                "groupId = ?",
+                "group_id = ?",
                 new String[]{ groupId },
                 null, null, null)) {
             while(c.moveToNext()) {
@@ -210,9 +210,9 @@ public final class SqliteGroupRepository implements GroupRepository {
         String id = c.getString(c.getColumnIndexOrThrow("id"));
         String name = c.getString(c.getColumnIndexOrThrow("name"));
         String description = c.getString(c.getColumnIndexOrThrow("description"));
-        String ownerId = c.getString(c.getColumnIndexOrThrow("ownerId"));
+        String ownerId = c.getString(c.getColumnIndexOrThrow("owner_id"));
         Instant createdAt = Instant.ofEpochMilli(
-                c.getLong(c.getColumnIndexOrThrow("createdAt")));
+                c.getLong(c.getColumnIndexOrThrow("created_at")));
 
         return  new Group(id, name, description, ownerId, createdAt);
     }
@@ -224,13 +224,13 @@ public final class SqliteGroupRepository implements GroupRepository {
 
     private Settlement readSettlement(Cursor c) {
         String id = c.getString(c.getColumnIndexOrThrow("id"));
-        String groupId = c.getString(c.getColumnIndexOrThrow("groupId"));
-        String recorderId = c.getString(c.getColumnIndexOrThrow("recorderId"));
-        String payerId = c.getString(c.getColumnIndexOrThrow("payerId"));
-        String receiverId = c.getString(c.getColumnIndexOrThrow("receiverId"));
-        long amountCents = c.getLong(c.getColumnIndexOrThrow("amountCents"));
+        String groupId = c.getString(c.getColumnIndexOrThrow("group_id"));
+        String recorderId = c.getString(c.getColumnIndexOrThrow("recorder_id"));
+        String payerId = c.getString(c.getColumnIndexOrThrow("payer_id"));
+        String receiverId = c.getString(c.getColumnIndexOrThrow("receiver_id"));
+        long amountCents = c.getLong(c.getColumnIndexOrThrow("amount_cents"));
         Instant settledAt = Instant.ofEpochMilli(
-                c.getLong(c.getColumnIndexOrThrow("settledAt")));
+                c.getLong(c.getColumnIndexOrThrow("settled_at")));
 
         return new Settlement(id, groupId, recorderId, payerId, receiverId, amountCents, settledAt);
     }
