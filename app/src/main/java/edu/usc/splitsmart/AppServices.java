@@ -3,8 +3,6 @@ package edu.usc.splitsmart;
 import android.content.Context;
 
 import edu.usc.splitsmart.fake.FakeExpenseHandler;
-import edu.usc.splitsmart.fake.FakeGroupHandler;
-import edu.usc.splitsmart.fake.FakeMemberAuthenticationHandler;
 import edu.usc.splitsmart.fake.FakeStore;
 import edu.usc.splitsmart.fake.FakeUserGroupBalanceHandler;
 import edu.usc.splitsmart.logic.DefaultGroupHandler;
