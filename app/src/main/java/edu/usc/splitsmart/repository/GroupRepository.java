@@ -2,6 +2,7 @@ package edu.usc.splitsmart.repository;
 
 import androidx.annotation.Nullable;
 
+import java.time.Instant;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -23,15 +24,16 @@ import edu.usc.splitsmart.model.User;
  */
 public interface GroupRepository {
 
+
     // -------------------------------------------------------------------------------------
     // Role 3: groups, membership, settlements
     // -------------------------------------------------------------------------------------
 
     /** Saves a new group along with a membership row for each id, in the order given. */
-    void saveGroup(Group group, List<String> memberIds);
+    Group saveGroup(String name, String description, String ownerId, Instant createdAt, List<String> memberIds);
 
     /** Changes the name and description of an existing group (R18). */
-    void updateGroup(String groupId, String name, String description);
+    Group updateGroup(String groupId, String name, String description);
 
     /** Adds members to a group. Ids that are already members are left alone (R18). */
     void addMembers(String groupId, List<String> userIds);
@@ -53,7 +55,7 @@ public interface GroupRepository {
     boolean isOwner(String groupId, String userId);
 
     /** Records a payment one member made to another outside the app (R16). */
-    void saveSettlement(Settlement settlement);
+    Settlement saveSettlement(String groupId, String recorderId, String payerId, String receiverId, long amountCents, Instant settledAt);
 
     /** Every settlement in the group. Role 5 nets these against the expenses. */
     List<Settlement> findSettlementsByGroup(String groupId);

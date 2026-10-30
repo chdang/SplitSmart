@@ -3,10 +3,10 @@ package edu.usc.splitsmart;
 import android.content.Context;
 
 import edu.usc.splitsmart.fake.FakeExpenseHandler;
-import edu.usc.splitsmart.fake.FakeGroupHandler;
-import edu.usc.splitsmart.fake.FakeMemberAuthenticationHandler;
 import edu.usc.splitsmart.fake.FakeStore;
 import edu.usc.splitsmart.fake.FakeUserGroupBalanceHandler;
+import edu.usc.splitsmart.logic.DefaultGroupHandler;
+import edu.usc.splitsmart.logic.DefaultMemberAuthenticationHandler;
 import edu.usc.splitsmart.logic.DefaultSessionHandler;
 import edu.usc.splitsmart.logic.DefaultUpdateUserNameHandler;
 import edu.usc.splitsmart.logic.DefaultUserSignUpHandler;
@@ -17,8 +17,10 @@ import edu.usc.splitsmart.logic.SessionHandler;
 import edu.usc.splitsmart.logic.UpdateUserNameHandler;
 import edu.usc.splitsmart.logic.UserGroupBalanceHandler;
 import edu.usc.splitsmart.logic.UserSignUpHandler;
+import edu.usc.splitsmart.repository.GroupRepository;
 import edu.usc.splitsmart.repository.SessionStore;
 import edu.usc.splitsmart.repository.SplitSmartDatabase;
+import edu.usc.splitsmart.repository.SqliteGroupRepository;
 import edu.usc.splitsmart.repository.SqliteUserRepository;
 import edu.usc.splitsmart.repository.UserRepository;
 
@@ -40,7 +42,7 @@ public final class AppServices {
     private static UpdateUserNameHandler userNames;
 
     // Role 3
-    private static GroupHandler groups;
+    private static GroupHandler groupHandler;
     private static MemberAuthenticationHandler membership;
 
     // Role 4
@@ -56,15 +58,17 @@ public final class AppServices {
     public static void init(Context context) {
         SplitSmartDatabase database = new SplitSmartDatabase(context);
         UserRepository users = new SqliteUserRepository(database);
+        GroupRepository groups = new SqliteGroupRepository(database);
         SessionStore sessions = new SessionStore(context);
 
         session = new DefaultSessionHandler(users, sessions);
         signUp = new DefaultUserSignUpHandler(users);
         userNames = new DefaultUpdateUserNameHandler(users, sessions);
 
+        groupHandler = new DefaultGroupHandler(users, groups);
+        membership = new DefaultMemberAuthenticationHandler(groups);
+
         FakeStore fakeStore = new FakeStore();
-        groups = new FakeGroupHandler(fakeStore);
-        membership = new FakeMemberAuthenticationHandler(fakeStore);
         expenses = new FakeExpenseHandler(fakeStore);
         balances = new FakeUserGroupBalanceHandler(fakeStore);
     }
@@ -82,7 +86,7 @@ public final class AppServices {
     }
 
     public static GroupHandler groups() {
-        return groups;
+        return groupHandler;
     }
 
     public static MemberAuthenticationHandler membership() {
@@ -102,6 +106,6 @@ public final class AppServices {
      * demo accounts. Goes false once the last fake handler is replaced.
      */
     public static boolean usingFakeAccounts() {
-        return groups instanceof FakeGroupHandler;
+        return groupHandler instanceof DefaultGroupHandler;
     }
 }
