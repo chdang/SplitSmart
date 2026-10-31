@@ -5,10 +5,15 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Looper;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -28,10 +33,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 
+import edu.usc.splitsmart.AppServices;
+import edu.usc.splitsmart.R;
 import edu.usc.splitsmart.model.Category;
 import edu.usc.splitsmart.model.Expense;
 import edu.usc.splitsmart.model.ExpenseShare;
@@ -41,8 +49,10 @@ import edu.usc.splitsmart.repository.SessionStore;
 import edu.usc.splitsmart.repository.SplitSmartDatabase;
 import edu.usc.splitsmart.repository.SqliteGroupRepository;
 import edu.usc.splitsmart.repository.SqliteUserRepository;
+import edu.usc.splitsmart.ui.common.Extras;
+import edu.usc.splitsmart.ui.expense.EditExpenseActivity;
 
-/** Exercises real SQLite, session checks, permissions, filters, and migration. */
+/** Exercises real SQLite, session checks, callbacks, and AppServices wiring together. */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28, application = Application.class)
 @LooperMode(LooperMode.Mode.PAUSED)
@@ -274,6 +284,61 @@ public class ExpenseIntegrationTest {
                 ExpenseIntegrationTest.<Settlement>await(cb -> handler.recordSettlement(GROUP, ALEX, ALEX, 1, cb)));
         assertError(SplitSmartException.Code.NOT_A_MEMBER,
                 ExpenseIntegrationTest.<Settlement>await(cb -> handler.recordSettlement(GROUP, ALEX, "u-priya", 1, cb)));
+    }
+
+    @Test
+    public void groupListAndAppServicesUsePersistentExpenses() {
+        AppServices.init(context);
+        assertTrue(AppServices.expenses() instanceof DefaultExpenseHandler);
+        Expense created = ExpenseIntegrationTest.<Expense>await(cb ->
+                AppServices.expenses().createExpense(TOMMY, standardDraft(), cb)).value();
+        List<Expense> list = ExpenseIntegrationTest.<List<Expense>>await(cb ->
+                AppServices.groups().getGroupExpenses(GROUP, cb)).value();
+        assertEquals(Collections.singletonList(created), list);
+    }
+
+    @Test
+    public void percentageFormRetainsOriginalPercentagesAndShowsRoundedShares() {
+        AppServices.init(context);
+        Expense created = ExpenseIntegrationTest.<Expense>await(cb ->
+                AppServices.expenses().createExpense(TOMMY,
+                        draft(GROUP, ALEX, 1, SplitType.PERCENTAGE, DATE,
+                                allocations(TOMMY, 3333L, ALEX, 6667L)), cb)).value();
+        Intent intent = new Intent(context, EditExpenseActivity.class)
+                .putExtra(Extras.GROUP_ID, GROUP).putExtra(Extras.EXPENSE_ID, created.getId());
+        try (var controller = Robolectric.buildActivity(EditExpenseActivity.class, intent).setup()) {
+            EditExpenseActivity activity = controller.get();
+            awaitCondition(() -> activity.findViewById(R.id.save_button).getVisibility() == View.VISIBLE
+                    && ((TextView) activity.findViewById(R.id.description_input))
+                    .getText().toString().equals("Dinner"));
+            LinearLayout rows = activity.findViewById(R.id.participants_container);
+            int checked = 0;
+            for (int i = 0; i < rows.getChildCount(); i++) {
+                View row = rows.getChildAt(i);
+                CheckBox check = row.findViewById(R.id.participant_check);
+                if (!check.isChecked()) continue;
+                checked++;
+                TextView input = row.findViewById(R.id.participant_value_input);
+                TextView preview = row.findViewById(R.id.participant_preview);
+                if (check.getText().toString().contains("Tommy")) {
+                    assertEquals("33.33", input.getText().toString());
+                    assertEquals("$0.00", preview.getText().toString());
+                } else {
+                    assertEquals("66.67", input.getText().toString());
+                    assertEquals("$0.01", preview.getText().toString());
+                }
+            }
+            assertEquals(2, checked);
+            activity.findViewById(R.id.save_button).performClick();
+            awaitCondition(activity::isFinishing);
+        }
+        Expense reloaded = groups.findExpenseById(created.getId());
+        for (ExpenseShare share : reloaded.getShares()) {
+            assertEquals(Long.valueOf(share.getUserId().equals(TOMMY) ? 3333 : 6667),
+                    share.getBasisPoints());
+        }
+        assertEquals(0, reloaded.owedBy(TOMMY));
+        assertEquals(1, reloaded.owedBy(ALEX));
     }
 
     @Test
