@@ -2,10 +2,10 @@ package edu.usc.splitsmart;
 
 import android.content.Context;
 
-import edu.usc.splitsmart.fake.FakeExpenseHandler;
 import edu.usc.splitsmart.fake.FakeStore;
 import edu.usc.splitsmart.fake.FakeUserGroupBalanceHandler;
 import edu.usc.splitsmart.logic.DefaultGroupHandler;
+import edu.usc.splitsmart.logic.DefaultExpenseHandler;
 import edu.usc.splitsmart.logic.DefaultMemberAuthenticationHandler;
 import edu.usc.splitsmart.logic.DefaultSessionHandler;
 import edu.usc.splitsmart.logic.DefaultUpdateUserNameHandler;
@@ -25,14 +25,9 @@ import edu.usc.splitsmart.repository.SqliteUserRepository;
 import edu.usc.splitsmart.repository.UserRepository;
 
 /**
- * The one place screens get their handlers from. Accounts are real and backed by the database.
- * The rest are still fakes on in-memory sample data; when an owner merges a real handler, they
- * change only its line in {@link #init} and every screen starts using it.
- *
- * <p>While some handlers are real and others are fake, the two sides line up only because the
- * seeded accounts use the same ids on both. An account created through sign-up exists in the
- * database but not in the fake store, so its group screens stay empty until roles 3 to 5 land.
- * Log in as one of the sample accounts to see populated screens.
+ * The one place screens get their handlers from. Accounts, groups, expenses, and settlements
+ * use SQLite. Role 5's balances and history still use a separate in-memory sample store and
+ * do not yet reflect real expense changes.
  */
 public final class AppServices {
 
@@ -69,7 +64,7 @@ public final class AppServices {
         membership = new DefaultMemberAuthenticationHandler(groups);
 
         FakeStore fakeStore = new FakeStore();
-        expenses = new FakeExpenseHandler(fakeStore);
+        expenses = new DefaultExpenseHandler(groups, session);
         balances = new FakeUserGroupBalanceHandler(fakeStore);
     }
 

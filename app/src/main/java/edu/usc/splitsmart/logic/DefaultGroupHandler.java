@@ -89,7 +89,7 @@ public class DefaultGroupHandler implements GroupHandler{
     /** Every expense in the group, newest expense date first (R8). */
     @Override
     public void getGroupExpenses(String groupId, Callback<List<Expense>> callback) {
-        throw notImplemented(4);
+        Async.run(() -> groups.findExpensesByGroup(groupId), callback);
     }
 
     /** Expense count, total spending, and spending per category for one month (R17). */

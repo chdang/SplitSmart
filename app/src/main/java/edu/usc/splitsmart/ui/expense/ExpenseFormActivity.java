@@ -19,6 +19,8 @@ import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -28,8 +30,11 @@ import java.util.Map;
 import edu.usc.splitsmart.AppServices;
 import edu.usc.splitsmart.R;
 import edu.usc.splitsmart.logic.ExpenseDraft;
+import edu.usc.splitsmart.logic.SplitCalculator;
+import edu.usc.splitsmart.logic.SplitSmartException;
 import edu.usc.splitsmart.model.Category;
 import edu.usc.splitsmart.model.Expense;
+import edu.usc.splitsmart.model.ExpenseShare;
 import edu.usc.splitsmart.model.SplitType;
 import edu.usc.splitsmart.model.User;
 import edu.usc.splitsmart.ui.common.Dates;
@@ -360,14 +365,6 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
 
         switch (splitType) {
             case EQUAL: {
-                if (total != null && total > 0) {
-                    // Leftover cents go to the first people listed, as SplitType.EQUAL describes.
-                    long base = total / checked.size();
-                    long extra = total % checked.size();
-                    for (int i = 0; i < checked.size(); i++) {
-                        checked.get(i).setPreview(Money.format(base + (i < extra ? 1 : 0)));
-                    }
-                }
                 showStatus(getResources().getQuantityString(R.plurals.split_status_equal,
                         checked.size(), checked.size()), Status.NEUTRAL);
                 break;
@@ -378,9 +375,6 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
                     Long basisPoints = row.value();
                     if (basisPoints != null) {
                         sum += basisPoints;
-                        if (total != null) {
-                            row.setPreview(Money.format(total * basisPoints / 10000));
-                        }
                     }
                 }
                 long left = 10000 - sum;
@@ -421,6 +415,26 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
                 break;
             }
         }
+        updateSharePreviews(total, checked);
+    }
+
+    /** Uses the handler's calculator so the preview includes the same rounding pennies. */
+    private void updateSharePreviews(Long total, List<ParticipantRow> checked) {
+        if (total == null || total <= 0) return;
+        Map<String, Long> allocations = new LinkedHashMap<>();
+        for (ParticipantRow row : checked) {
+            Long value = splitType == SplitType.EQUAL ? Long.valueOf(0) : row.value();
+            if (value == null) return;
+            allocations.put(row.user.getId(), value);
+        }
+        try {
+            Map<String, Long> owed = SplitCalculator.calculate(total, splitType, allocations);
+            for (ParticipantRow row : checked) {
+                row.setPreview(Money.format(owed.get(row.user.getId())));
+            }
+        } catch (SplitSmartException ignored) {
+            // Incomplete or invalid splits already have a status message above.
+        }
     }
 
     private void showStatus(String text, Status status) {
@@ -435,11 +449,21 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     }
 
     /**
-     * The percentage each participant paid, in basis points, rebuilt from their owed amounts.
-     * The rounding remainder goes to the largest share so the total is exactly 100%.
+     * Restores entered percentages. For legacy shares, reconstructs them from owed cents and
+     * puts the rounding remainder on the largest share so the total is exactly 100%.
      */
     private static Map<String, Long> percentagesOf(Expense expense) {
         Map<String, Long> result = new LinkedHashMap<>();
+        boolean hasOriginalPercentages = !expense.getShares().isEmpty();
+        for (ExpenseShare share : expense.getShares()) {
+            if (share.getBasisPoints() == null) {
+                hasOriginalPercentages = false;
+                break;
+            }
+            result.put(share.getUserId(), share.getBasisPoints());
+        }
+        if (hasOriginalPercentages) return result;
+        result.clear();
         if (expense.getTotalCents() <= 0) {
             return result;
         }
@@ -448,7 +472,9 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
         for (int i = 0; i < expense.getShares().size(); i++) {
             String id = expense.getShares().get(i).getUserId();
             long owed = expense.getShares().get(i).getOwedCents();
-            long basisPoints = Math.round(owed * 10000.0 / expense.getTotalCents());
+            long basisPoints = BigDecimal.valueOf(owed).multiply(BigDecimal.valueOf(10000))
+                    .divide(BigDecimal.valueOf(expense.getTotalCents()), 0, RoundingMode.HALF_UP)
+                    .longValueExact();
             result.put(id, basisPoints);
             sum += basisPoints;
             if (largest == null || basisPoints > result.get(largest)) {
