@@ -1,5 +1,7 @@
 package edu.usc.splitsmart.logic;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.usc.splitsmart.model.Expense;
@@ -9,28 +11,69 @@ import edu.usc.splitsmart.model.Settlement;
 public interface ExpenseHandler {
 
     /**
-     * Checks the draft, works out each share, and saves the expense with {@code creatorId} as
-     * its creator. Fails with NOT_A_MEMBER, INVALID_AMOUNT, INVALID_SPLIT, or INVALID_INPUT.
+     * Checks the draft, works out each share, and saves the expense. In the real handler,
+     * creatorId must match the logged-in user. Fails with NOT_LOGGED_IN, NOT_A_MEMBER,
+     * INVALID_AMOUNT, INVALID_SPLIT, or INVALID_INPUT.
      */
     void createExpense(String creatorId, ExpenseDraft draft, Callback<Expense> callback);
 
-    /** Fails with NOT_FOUND if the expense doesn't exist. */
+    /** Fails with NOT_FOUND if absent. The real handler requires a logged-in group member. */
     void getExpense(String expenseId, Callback<Expense> callback);
 
-    /** Every expense in the group, newest expense date first. */
+    /** Every expense in the group, newest expense date first. Requires membership when real. */
     void getExpenses(String groupId, Callback<List<Expense>> callback);
 
     /**
+     * R8 reporting filters, combined with AND. Null means no filter. A user is involved if they
+     * paid or have a share (including a zero share); creator alone does not count. Date bounds
+     * are inclusive and use expenseDate, not createdAt. Preserves newest-first ordering.
+     * A reversed date range fails with INVALID_INPUT. Existing implementations remain compatible.
+     */
+    default void getExpenses(String groupId, String userId, LocalDate fromDate, LocalDate toDate,
+                             Callback<List<Expense>> callback) {
+        getExpenses(groupId, new Callback<List<Expense>>() {
+            @Override
+            public void onSuccess(List<Expense> expenses) {
+                if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
+                    callback.onError(new SplitSmartException(SplitSmartException.Code.INVALID_INPUT));
+                    return;
+                }
+                List<Expense> filtered = new ArrayList<>();
+                for (Expense expense : expenses) {
+                    if (userId != null && !userId.equals(expense.getPayerId())
+                            && !expense.hasShareFor(userId)) {
+                        continue;
+                    }
+                    if (fromDate != null && expense.getExpenseDate().isBefore(fromDate)) {
+                        continue;
+                    }
+                    if (toDate != null && expense.getExpenseDate().isAfter(toDate)) {
+                        continue;
+                    }
+                    filtered.add(expense);
+                }
+                callback.onSuccess(filtered);
+            }
+
+            @Override
+            public void onError(Exception error) {
+                callback.onError(error);
+            }
+        });
+    }
+
+    /**
      * Replaces the expense's details and shares. Fails with NOT_CREATOR if {@code actorId}
-     * didn't create it (R7), or with the same errors as createExpense.
+     * isn't the logged-in creator (R7), or with the same errors as createExpense. The group,
+     * creator, ID, and creation time cannot change.
      */
     void updateExpense(String expenseId, String actorId, ExpenseDraft draft,
                        Callback<Expense> callback);
 
-    /** Deletes the expense and its shares. Fails with NOT_CREATOR (R7). */
+    /** Deletes the expense and its shares. Requires the logged-in creator (R7). */
     void deleteExpense(String expenseId, String actorId, Callback<Void> callback);
 
-    /** Returns true if the user created the expense. */
+    /** Returns true if the user created the expense, false if absent. Requires membership when real. */
     void authenticateCreator(String expenseId, String userId, Callback<Boolean> callback);
 
     /**

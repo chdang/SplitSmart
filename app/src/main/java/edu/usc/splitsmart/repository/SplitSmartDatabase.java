@@ -17,7 +17,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public final class SplitSmartDatabase extends SQLiteOpenHelper {
 
     private static final String NAME = "splitsmart.db";
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
 
     /** "groups" is a SQLite keyword, so the table is named split_groups. */
     public static final String GROUPS = "split_groups";
@@ -78,6 +78,7 @@ public final class SplitSmartDatabase extends SQLiteOpenHelper {
                 + "expense_id TEXT NOT NULL REFERENCES " + EXPENSES + "(id) ON DELETE CASCADE, "
                 + "user_id TEXT NOT NULL REFERENCES " + USERS + "(id), "
                 + "owed_cents INTEGER NOT NULL, "
+                + "basis_points INTEGER, "
                 // Keeps the participant order the form sent, which the split calculator relies
                 // on when it hands out leftover pennies (R9).
                 + "position INTEGER NOT NULL, "
@@ -102,14 +103,9 @@ public final class SplitSmartDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // The app hasn't shipped, so there's no data worth migrating yet. Bumping VERSION wipes
-        // the database and rebuilds it. Write a real migration here once we have real users.
-        db.execSQL("DROP TABLE IF EXISTS " + EXPENSE_SHARES);
-        db.execSQL("DROP TABLE IF EXISTS " + EXPENSES);
-        db.execSQL("DROP TABLE IF EXISTS " + SETTLEMENTS);
-        db.execSQL("DROP TABLE IF EXISTS " + GROUP_MEMBERS);
-        db.execSQL("DROP TABLE IF EXISTS " + GROUPS);
-        db.execSQL("DROP TABLE IF EXISTS " + USERS);
-        onCreate(db);
+        if (oldVersion < 2) {
+            // Keep accounts, groups, and expenses. Legacy shares have no original percentage.
+            db.execSQL("ALTER TABLE " + EXPENSE_SHARES + " ADD COLUMN basis_points INTEGER");
+        }
     }
 }
