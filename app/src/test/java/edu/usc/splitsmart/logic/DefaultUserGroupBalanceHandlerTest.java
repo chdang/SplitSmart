@@ -88,6 +88,24 @@ public class DefaultUserGroupBalanceHandlerTest {
     }
 
     @Test
+    public void opposingDebtsNetToOneBalance() {
+        // Ana owes Ben $20.00 from one expense; Ben owes Ana $5.00 from another.
+        Expense tickets = expense(BEN, 2000, SplitType.EXACT_AMOUNT, share(ANA, 2000));
+        Expense snacks = expense(ANA, 500, SplitType.EXACT_AMOUNT, share(BEN, 500));
+
+        Map<String, Long> anaView = balances(ANA, list(tickets, snacks), none());
+        Map<String, Long> benView = balances(BEN, list(tickets, snacks), none());
+
+        // Ana owes Ben $15.00, not $20.00 owed one way and $5.00 the other.
+        assertEquals(-1500L, (long) anaView.get(BEN));
+        assertEquals(1500L, DefaultUserGroupBalanceHandler.totalPayable(anaView));
+        assertEquals(0L, DefaultUserGroupBalanceHandler.totalReceivable(anaView));
+        assertEquals(1500L, (long) benView.get(ANA));
+        assertEquals(1500L, DefaultUserGroupBalanceHandler.totalReceivable(benView));
+        assertEquals(0L, DefaultUserGroupBalanceHandler.totalPayable(benView));
+    }
+
+    @Test
     public void partialSettlementReducesDebt() {
         Expense dinner = expense(ANA, 3000, SplitType.EQUAL,
                 share(ANA, 1000), share(BEN, 1000), share(CAL, 1000));
