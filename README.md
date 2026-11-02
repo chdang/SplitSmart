@@ -13,7 +13,7 @@ Team 02 (DDACK), Project 2.2.
 
 Log in with `tommy@usc.edu` and the password `password`.
 
-Accounts, groups, expenses, expense shares, and settlements are stored in SQLite on the device and survive closing the app. Expense creation, viewing, editing, and deletion use the real handler. Balances and history still use fake in-memory data until Role 5 merges its handlers; they do not yet reflect changes to real expenses. The monthly summary is still unimplemented.
+Accounts, groups, expenses, expense shares, and settlements are stored in SQLite on the device and survive closing the app. Expense creation, viewing, editing, and deletion use the real handler. Balances, history, and the monthly summary (Role 5) also use real data: they are recalculated from the stored expenses and settlements on every view, so edits, deletions, and new settlements show up right away.
 
 The database is seeded with five sample accounts (`tommy@usc.edu`, `alex@usc.edu`, `sam@usc.edu`, `jordan@usc.edu`, and `priya@usc.edu`), all with the password `password`, plus two sample groups with no expenses. New accounts can create groups and expenses. Uninstalling the app clears local data; the next launch recreates the sample accounts and groups.
 
