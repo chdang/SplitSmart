@@ -24,13 +24,9 @@ public class DefaultGroupHandler implements GroupHandler{
 
     private final GroupRepository groups;
 
-    private final ExpenseHandler expenses;
-
-    public DefaultGroupHandler(UserRepository users, GroupRepository groups,
-                               ExpenseHandler expenses) {
+    public DefaultGroupHandler(UserRepository users, GroupRepository groups) {
         this.users = users;
         this.groups = groups;
-        this.expenses = expenses;
     }
 
     /**
@@ -96,8 +92,7 @@ public class DefaultGroupHandler implements GroupHandler{
     /** Every expense in the group, newest expense date first (R8). */
     @Override
     public void getGroupExpenses(String groupId, Callback<List<Expense>> callback) {
-        // Expenses belong to role 4's handler; same contract, so pass the call through.
-        expenses.getExpenses(groupId, callback);
+        Async.run(() -> groups.findExpensesByGroup(groupId), callback);
     }
 
     /** Expense count, total spending, and spending per category for one month (R17). */

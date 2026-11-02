@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import java.time.YearMonth;
+import java.time.LocalDate;
 import java.util.List;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -23,8 +24,8 @@ import edu.usc.splitsmart.model.SplitType;
 import edu.usc.splitsmart.model.User;
 
 /**
- * Where roles 3, 4, and 5 write their SQL. Every method is a stub until its owner fills it in,
- * so the project compiles while the three of them work in parallel.
+ * Where roles 3, 4, and 5 write their SQL. Groups and expenses are implemented; reporting
+ * methods remain stubs until Role 5 fills them in.
  *
  * <p>Fill in your own block and leave the others alone. The table and column names are in
  * {@link SplitSmartDatabase}. Use {@code database.getWritableDatabase()} for writes, and wrap
@@ -155,7 +156,7 @@ public final class SqliteGroupRepository implements GroupRepository {
     public boolean isMember(String groupId, String userId) {
         try (Cursor c = database.getReadableDatabase().query(
                 SplitSmartDatabase.GROUP_MEMBERS,
-                new String[]{ "userId" },            // any column works, you only need to know if a row exists
+                new String[]{ "user_id" },
                 "group_id = ? AND user_id = ?",
                 new String[]{ groupId, userId },
                 null, null, null,
@@ -245,28 +246,119 @@ public final class SqliteGroupRepository implements GroupRepository {
 
     @Override
     public void saveExpense(Expense expense) {
-        throw notImplemented(4);
+        SQLiteDatabase db = database.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.insertOrThrow(SplitSmartDatabase.EXPENSES, null, expenseValues(expense));
+            insertShares(db, expense);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     @Override
     public void replaceExpense(Expense expense) {
-        throw notImplemented(4);
+        SQLiteDatabase db = database.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            int changed = db.update(SplitSmartDatabase.EXPENSES, expenseValues(expense),
+                    "id = ?", new String[]{expense.getId()});
+            if (changed != 1) {
+                throw new IllegalStateException("Cannot replace a missing expense");
+            }
+            db.delete(SplitSmartDatabase.EXPENSE_SHARES, "expense_id = ?",
+                    new String[]{expense.getId()});
+            insertShares(db, expense);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     @Override
     public void deleteExpense(String expenseId) {
-        throw notImplemented(4);
+        // The foreign key deletes shares in the same atomic SQLite statement.
+        database.getWritableDatabase().delete(SplitSmartDatabase.EXPENSES, "id = ?",
+                new String[]{expenseId});
     }
 
     @Nullable
     @Override
     public Expense findExpenseById(String expenseId) {
-        throw notImplemented(4);
+        SQLiteDatabase db = database.getReadableDatabase();
+        try (Cursor c = db.query(SplitSmartDatabase.EXPENSES, null, "id = ?",
+                new String[]{expenseId}, null, null, null)) {
+            return c.moveToFirst() ? readExpense(db, c) : null;
+        }
     }
 
     @Override
     public List<Expense> findExpensesByGroup(String groupId) {
-        throw notImplemented(4);
+        SQLiteDatabase db = database.getReadableDatabase();
+        List<Expense> expenses = new ArrayList<>();
+        try (Cursor c = db.query(SplitSmartDatabase.EXPENSES, null, "group_id = ?",
+                new String[]{groupId}, null, null, "expense_date DESC, created_at DESC, id ASC")) {
+            while (c.moveToNext()) {
+                expenses.add(readExpense(db, c));
+            }
+        }
+        return expenses;
+    }
+
+    private ContentValues expenseValues(Expense expense) {
+        ContentValues values = new ContentValues();
+        values.put("id", expense.getId());
+        values.put("group_id", expense.getGroupId());
+        values.put("creator_id", expense.getCreatorId());
+        values.put("payer_id", expense.getPayerId());
+        values.put("description", expense.getDescription());
+        values.put("total_cents", expense.getTotalCents());
+        values.put("category", expense.getCategory().name());
+        values.put("split_type", expense.getSplitType().name());
+        values.put("expense_date", expense.getExpenseDate().toString());
+        values.put("created_at", expense.getCreatedAt().toEpochMilli());
+        return values;
+    }
+
+    private void insertShares(SQLiteDatabase db, Expense expense) {
+        int position = 0;
+        for (ExpenseShare share : expense.getShares()) {
+            if (!expense.getId().equals(share.getExpenseId())) {
+                throw new IllegalArgumentException("Share belongs to a different expense");
+            }
+            ContentValues values = new ContentValues();
+            values.put("expense_id", expense.getId());
+            values.put("user_id", share.getUserId());
+            values.put("owed_cents", share.getOwedCents());
+            values.put("basis_points", share.getBasisPoints());
+            values.put("position", position++);
+            db.insertOrThrow(SplitSmartDatabase.EXPENSE_SHARES, null, values);
+        }
+    }
+
+    private Expense readExpense(SQLiteDatabase db, Cursor c) {
+        String id = c.getString(c.getColumnIndexOrThrow("id"));
+        List<ExpenseShare> shares = new ArrayList<>();
+        try (Cursor s = db.query(SplitSmartDatabase.EXPENSE_SHARES, null, "expense_id = ?",
+                new String[]{id}, null, null, "position ASC")) {
+            while (s.moveToNext()) {
+                shares.add(new ExpenseShare(id, s.getString(s.getColumnIndexOrThrow("user_id")),
+                        s.getLong(s.getColumnIndexOrThrow("owed_cents")),
+                        s.isNull(s.getColumnIndexOrThrow("basis_points")) ? null
+                                : s.getLong(s.getColumnIndexOrThrow("basis_points"))));
+            }
+        }
+        return new Expense(id,
+                c.getString(c.getColumnIndexOrThrow("group_id")),
+                c.getString(c.getColumnIndexOrThrow("creator_id")),
+                c.getString(c.getColumnIndexOrThrow("payer_id")),
+                c.getString(c.getColumnIndexOrThrow("description")),
+                c.getLong(c.getColumnIndexOrThrow("total_cents")),
+                Category.valueOf(c.getString(c.getColumnIndexOrThrow("category"))),
+                SplitType.valueOf(c.getString(c.getColumnIndexOrThrow("split_type"))),
+                LocalDate.parse(c.getString(c.getColumnIndexOrThrow("expense_date"))),
+                Instant.ofEpochMilli(c.getLong(c.getColumnIndexOrThrow("created_at"))), shares);
     }
 
     // -------------------------------------------------------------------------------------
@@ -289,38 +381,6 @@ public final class SqliteGroupRepository implements GroupRepository {
             }
             return expenses;
         }
-    }
-
-    // helper to map cursor to expense object, with its shares in participant order
-    private Expense readExpense(SQLiteDatabase db, Cursor c) {
-        String id = c.getString(c.getColumnIndexOrThrow("id"));
-        String groupId = c.getString(c.getColumnIndexOrThrow("group_id"));
-        String creatorId = c.getString(c.getColumnIndexOrThrow("creator_id"));
-        String payerId = c.getString(c.getColumnIndexOrThrow("payer_id"));
-        String description = c.getString(c.getColumnIndexOrThrow("description"));
-        long totalCents = c.getLong(c.getColumnIndexOrThrow("total_cents"));
-        Category category = Category.valueOf(c.getString(c.getColumnIndexOrThrow("category")));
-        SplitType splitType = SplitType.valueOf(
-                c.getString(c.getColumnIndexOrThrow("split_type")));
-        LocalDate expenseDate = LocalDate.parse(
-                c.getString(c.getColumnIndexOrThrow("expense_date")));
-        Instant createdAt = Instant.ofEpochMilli(
-                c.getLong(c.getColumnIndexOrThrow("created_at")));
-
-        List<ExpenseShare> shares = new ArrayList<>();
-        try (Cursor s = db.query(
-                SplitSmartDatabase.EXPENSE_SHARES,
-                new String[]{ "user_id", "owed_cents" },
-                "expense_id = ?",
-                new String[]{ id },
-                null, null, "position ASC")) {
-            while (s.moveToNext()) {
-                shares.add(new ExpenseShare(id, s.getString(0), s.getLong(1)));
-            }
-        }
-
-        return new Expense(id, groupId, creatorId, payerId, description, totalCents, category,
-                splitType, expenseDate, createdAt, shares);
     }
 
     private static UnsupportedOperationException notImplemented(int role) {

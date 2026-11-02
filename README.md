@@ -13,9 +13,9 @@ Team 02 (DDACK), Project 2.2.
 
 Log in with `tommy@usc.edu` and the password `password`.
 
-Accounts are real: sign-up, login, logout, and the profile name are stored in a SQLite database on the device and survive closing the app. Groups, expenses, and balances still come from fake in-memory data and are lost when the app closes, until roles 3 to 5 merge their handlers.
+Accounts, groups, expenses, expense shares, and settlements are stored in SQLite on the device and survive closing the app. Expense creation, viewing, editing, and deletion use the real handler. Balances and history still use fake in-memory data until Role 5 merges its handlers; they do not yet reflect changes to real expenses. The monthly summary is still unimplemented.
 
-The database is seeded with five sample accounts (`tommy@`, `alex@`, `sam@`, `jordan@`, and `priya@usc.edu`), all with the password `password`. An account you create through sign-up works, but its group screens are empty until the real group handlers land. To start from an empty database, uninstall the app from the device.
+The database is seeded with five sample accounts (`tommy@usc.edu`, `alex@usc.edu`, `sam@usc.edu`, `jordan@usc.edu`, and `priya@usc.edu`), all with the password `password`, plus two sample groups with no expenses. New accounts can create groups and expenses. Uninstalling the app clears local data; the next launch recreates the sample accounts and groups.
 
 ## Project structure
 
@@ -43,3 +43,19 @@ Screens never call repositories directly. They call handlers through `AppService
 ## Money
 
 All amounts are stored as whole cents in a `long`, never as `double` or `float`. $12.50 is `1250`. Percentages are stored in basis points: 25.5% is `2550`, and 100% is `10000`.
+
+## Expenses (Role 4, R6–R11)
+
+`DefaultExpenseHandler` uses the current session, validates group membership for the creator, payer, and every participant, and saves through `GroupRepository`. The creator can log a payment made by another member. Only the creator can edit or delete it; changing the payer does not transfer edit rights. Editing preserves the expense ID, creator, creation time, and group, and atomically replaces its shares. Deleting removes its shares too. Database work runs off the main thread, and callbacks return on the main thread.
+
+`SplitCalculator.calculate(totalCents, splitType, allocations)` works without Android or a database. Use a `LinkedHashMap` to specify participant order. Equal splits give leftover pennies to the first participants. Percentage splits require exactly 10000 basis points and give rounding pennies to the largest fractional remainders, breaking ties by participant order. Exact amounts must sum to the total. Zero shares are allowed, but totals must be positive. All three modes support totals up to `Long.MAX_VALUE` without overflowing.
+
+Percentage shares also retain the original basis points so reopening the edit form does not reconstruct percentages from rounded cents. Database version 2 adds this optional field without deleting existing data. Older shares without stored percentages use the form's reconstruction fallback. Share previews use the same calculator as saving.
+
+Role 5 can call `ExpenseHandler.getExpenses(groupId, userId, fromDate, toDate, callback)` to combine user and date filters. Each filter can be `null` to disable it. A user matches as payer or participant (including a zero share); being the creator alone does not match. Both date endpoints are inclusive and apply to the expense date, not the creation time. A reversed date range returns `INVALID_INPUT`. Results contain shares and sort by expense date descending, then creation time descending, then ID ascending for ties. The original unfiltered `getExpenses` method remains available.
+
+The existing `recordSettlement` entry point delegates to Role 3's real settlement repository. Role 5 still needs to include these persistent settlements in balances and history.
+
+## Tests
+
+Run `./gradlew testDebugUnitTest` for split-calculator tests and Robolectric integration tests using SQLite. They cover rounding, large amounts, invalid inputs, current-user and creator permissions, inclusive filters, persistence after reopening, share replacement/deletion, and transaction rollback. Run `./gradlew assembleDebug` to build the app.
