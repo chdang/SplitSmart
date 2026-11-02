@@ -8,14 +8,18 @@ import java.util.UUID;
 import java.time.YearMonth;
 import java.util.List;
 import java.time.Instant;
+import java.time.LocalDate;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import edu.usc.splitsmart.model.Category;
 import edu.usc.splitsmart.model.Expense;
+import edu.usc.splitsmart.model.ExpenseShare;
 import edu.usc.splitsmart.model.Group;
 import edu.usc.splitsmart.model.Settlement;
+import edu.usc.splitsmart.model.SplitType;
 import edu.usc.splitsmart.model.User;
 
 /**
@@ -271,7 +275,52 @@ public final class SqliteGroupRepository implements GroupRepository {
 
     @Override
     public List<Expense> findExpensesByGroupAndMonth(String groupId, YearMonth month) {
-        throw notImplemented(5);
+        List<Expense> expenses = new ArrayList<>();
+        SQLiteDatabase db = database.getReadableDatabase();
+        // expense_date is ISO yyyy-MM-dd, so a string range covers exactly one month.
+        try (Cursor c = db.query(
+                SplitSmartDatabase.EXPENSES,
+                null,
+                "group_id = ? AND expense_date BETWEEN ? AND ?",
+                new String[]{ groupId, month.atDay(1).toString(), month.atEndOfMonth().toString() },
+                null, null, "expense_date DESC, created_at DESC")) {
+            while (c.moveToNext()) {
+                expenses.add(readExpense(db, c));
+            }
+            return expenses;
+        }
+    }
+
+    // helper to map cursor to expense object, with its shares in participant order
+    private Expense readExpense(SQLiteDatabase db, Cursor c) {
+        String id = c.getString(c.getColumnIndexOrThrow("id"));
+        String groupId = c.getString(c.getColumnIndexOrThrow("group_id"));
+        String creatorId = c.getString(c.getColumnIndexOrThrow("creator_id"));
+        String payerId = c.getString(c.getColumnIndexOrThrow("payer_id"));
+        String description = c.getString(c.getColumnIndexOrThrow("description"));
+        long totalCents = c.getLong(c.getColumnIndexOrThrow("total_cents"));
+        Category category = Category.valueOf(c.getString(c.getColumnIndexOrThrow("category")));
+        SplitType splitType = SplitType.valueOf(
+                c.getString(c.getColumnIndexOrThrow("split_type")));
+        LocalDate expenseDate = LocalDate.parse(
+                c.getString(c.getColumnIndexOrThrow("expense_date")));
+        Instant createdAt = Instant.ofEpochMilli(
+                c.getLong(c.getColumnIndexOrThrow("created_at")));
+
+        List<ExpenseShare> shares = new ArrayList<>();
+        try (Cursor s = db.query(
+                SplitSmartDatabase.EXPENSE_SHARES,
+                new String[]{ "user_id", "owed_cents" },
+                "expense_id = ?",
+                new String[]{ id },
+                null, null, "position ASC")) {
+            while (s.moveToNext()) {
+                shares.add(new ExpenseShare(id, s.getString(0), s.getLong(1)));
+            }
+        }
+
+        return new Expense(id, groupId, creatorId, payerId, description, totalCents, category,
+                splitType, expenseDate, createdAt, shares);
     }
 
     private static UnsupportedOperationException notImplemented(int role) {

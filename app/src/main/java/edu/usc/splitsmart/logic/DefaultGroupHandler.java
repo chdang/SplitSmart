@@ -3,11 +3,14 @@ package edu.usc.splitsmart.logic;
 import java.time.Instant;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.Comparator;
 
+import edu.usc.splitsmart.model.Category;
 import edu.usc.splitsmart.model.Expense;
 import edu.usc.splitsmart.model.Group;
 import edu.usc.splitsmart.model.User;
@@ -101,7 +104,26 @@ public class DefaultGroupHandler implements GroupHandler{
     @Override
     public void getMonthlyStatistics(String groupId, YearMonth month,
                               Callback<MonthlyStatistics> callback){
-        throw notImplemented(5);
+        Async.run(() -> monthlyStatistics(month,
+                groups.findExpensesByGroupAndMonth(groupId, month)), callback);
+    }
+
+    /**
+     * Counts and totals the expenses dated in {@code month}, overall and per category. Settlements
+     * aren't spending, so they never reach here.
+     */
+    static MonthlyStatistics monthlyStatistics(YearMonth month, List<Expense> expenses) {
+        int count = 0;
+        long total = 0;
+        Map<Category, Long> byCategory = new EnumMap<>(Category.class);
+        for (Expense expense : expenses) {
+            if (YearMonth.from(expense.getExpenseDate()).equals(month)) {
+                count++;
+                total += expense.getTotalCents();
+                byCategory.merge(expense.getCategory(), expense.getTotalCents(), Long::sum);
+            }
+        }
+        return new MonthlyStatistics(month, count, total, byCategory);
     }
 
     /**
