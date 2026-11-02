@@ -65,11 +65,12 @@ public final class AppServices {
         signUp = new DefaultUserSignUpHandler(users);
         userNames = new DefaultUpdateUserNameHandler(users, sessions);
 
-        groupHandler = new DefaultGroupHandler(users, groups);
-        membership = new DefaultMemberAuthenticationHandler(groups);
-
         FakeStore fakeStore = new FakeStore();
         expenses = new FakeExpenseHandler(fakeStore);
+
+        groupHandler = new DefaultGroupHandler(users, groups, expenses);
+        membership = new DefaultMemberAuthenticationHandler(groups);
+
         balances = new FakeUserGroupBalanceHandler(fakeStore);
     }
 
