@@ -2,13 +2,12 @@ package edu.usc.splitsmart;
 
 import android.content.Context;
 
-import edu.usc.splitsmart.fake.FakeStore;
-import edu.usc.splitsmart.fake.FakeUserGroupBalanceHandler;
 import edu.usc.splitsmart.logic.DefaultGroupHandler;
 import edu.usc.splitsmart.logic.DefaultExpenseHandler;
 import edu.usc.splitsmart.logic.DefaultMemberAuthenticationHandler;
 import edu.usc.splitsmart.logic.DefaultSessionHandler;
 import edu.usc.splitsmart.logic.DefaultUpdateUserNameHandler;
+import edu.usc.splitsmart.logic.DefaultUserGroupBalanceHandler;
 import edu.usc.splitsmart.logic.DefaultUserSignUpHandler;
 import edu.usc.splitsmart.logic.ExpenseHandler;
 import edu.usc.splitsmart.logic.GroupHandler;
@@ -63,9 +62,8 @@ public final class AppServices {
         groupHandler = new DefaultGroupHandler(users, groups);
         membership = new DefaultMemberAuthenticationHandler(groups);
 
-        FakeStore fakeStore = new FakeStore();
         expenses = new DefaultExpenseHandler(groups, session);
-        balances = new FakeUserGroupBalanceHandler(fakeStore);
+        balances = new DefaultUserGroupBalanceHandler(groupHandler, membership, expenses, groups);
     }
 
     public static SessionHandler session() {

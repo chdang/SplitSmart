@@ -366,7 +366,20 @@ public final class SqliteGroupRepository implements GroupRepository {
 
     @Override
     public List<Expense> findExpensesByGroupAndMonth(String groupId, YearMonth month) {
-        throw notImplemented(5);
+        List<Expense> expenses = new ArrayList<>();
+        SQLiteDatabase db = database.getReadableDatabase();
+        // expense_date is ISO yyyy-MM-dd, so a string range covers exactly one month.
+        try (Cursor c = db.query(
+                SplitSmartDatabase.EXPENSES,
+                null,
+                "group_id = ? AND expense_date BETWEEN ? AND ?",
+                new String[]{ groupId, month.atDay(1).toString(), month.atEndOfMonth().toString() },
+                null, null, "expense_date DESC, created_at DESC")) {
+            while (c.moveToNext()) {
+                expenses.add(readExpense(db, c));
+            }
+            return expenses;
+        }
     }
 
     private static UnsupportedOperationException notImplemented(int role) {
