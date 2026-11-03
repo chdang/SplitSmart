@@ -26,6 +26,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 
 import edu.usc.splitsmart.model.Group;
+import edu.usc.splitsmart.repository.SessionStore;
 import edu.usc.splitsmart.repository.SplitSmartDatabase;
 import edu.usc.splitsmart.repository.SqliteGroupRepository;
 import edu.usc.splitsmart.repository.SqliteUserRepository;
@@ -52,7 +53,9 @@ public class DefaultGroupHandlerOwnerCheckTest {
         context.deleteDatabase("splitsmart.db");
         database = new SplitSmartDatabase(context);
         groups = new SqliteGroupRepository(database);
-        handler = new DefaultGroupHandler(new SqliteUserRepository(database), groups);
+        SqliteUserRepository users = new SqliteUserRepository(database);
+        handler = new DefaultGroupHandler(users, groups,
+                new DefaultSessionHandler(users, new SessionStore(context)));
     }
 
     @After
