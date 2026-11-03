@@ -59,7 +59,7 @@ public final class AppServices {
         signUp = new DefaultUserSignUpHandler(users);
         userNames = new DefaultUpdateUserNameHandler(users, sessions);
 
-        groupHandler = new DefaultGroupHandler(users, groups);
+        groupHandler = new DefaultGroupHandler(users, groups, session);
         membership = new DefaultMemberAuthenticationHandler(groups);
 
         expenses = new DefaultExpenseHandler(groups, session);

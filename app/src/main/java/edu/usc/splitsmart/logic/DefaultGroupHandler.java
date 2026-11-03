@@ -24,9 +24,13 @@ public class DefaultGroupHandler implements GroupHandler{
 
     private final GroupRepository groups;
 
-    public DefaultGroupHandler(UserRepository users, GroupRepository groups) {
+    private final SessionHandler session;
+
+    public DefaultGroupHandler(UserRepository users, GroupRepository groups,
+                               SessionHandler session) {
         this.users = users;
         this.groups = groups;
+        this.session = session;
     }
 
     /**
@@ -95,12 +99,24 @@ public class DefaultGroupHandler implements GroupHandler{
         Async.run(() -> groups.findExpensesByGroup(groupId), callback);
     }
 
-    /** Expense count, total spending, and spending per category for one month (R17). */
+    /**
+     * Expense count, total spending, and spending per category for one month (R17). Fails with
+     * NOT_LOGGED_IN if nobody is logged in, or NOT_A_MEMBER if the current user isn't in the group.
+     */
     @Override
     public void getMonthlyStatistics(String groupId, YearMonth month,
                               Callback<MonthlyStatistics> callback){
-        Async.run(() -> monthlyStatistics(month,
-                groups.findExpensesByGroupAndMonth(groupId, month)), callback);
+        // Read here because the session is only ever touched on the main thread.
+        User current = session.getCurrentUser();
+        Async.run(() -> {
+            if (current == null) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_LOGGED_IN);
+            }
+            if (!groups.isMember(groupId, current.getId())) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_A_MEMBER);
+            }
+            return monthlyStatistics(month, groups.findExpensesByGroupAndMonth(groupId, month));
+        }, callback);
     }
 
     /**
