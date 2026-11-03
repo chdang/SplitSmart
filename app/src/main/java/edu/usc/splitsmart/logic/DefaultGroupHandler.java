@@ -42,6 +42,11 @@ public class DefaultGroupHandler implements GroupHandler{
     public void createGroup(String ownerId, String name, String description, List<String> emails,
                      Callback<Group> callback) {
         Async.run(() -> {
+            // check for blank name and throw INVALID_INPUT
+            if (name.isEmpty()) {
+                throw new SplitSmartException(SplitSmartException.Code.INVALID_INPUT);
+            }
+
             // check all emails belong to existing accounts
             List<String> missing = new ArrayList<>();
             Set<String> memberIds = new LinkedHashSet<>();
@@ -66,7 +71,15 @@ public class DefaultGroupHandler implements GroupHandler{
     /** Fails with NOT_FOUND if the group doesn't exist. */
     @Override
     public void getGroup(String groupId, Callback<Group> callback){
+        User current = session.getCurrentUser();
         Async.run(() -> {
+            if (current == null) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_LOGGED_IN);
+            }
+            if (!groups.isMember(groupId, current.getId())) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_A_MEMBER);
+            }
+
             Group g = groups.findGroupById(groupId);
             if(g == null) {
                 throw new SplitSmartException(SplitSmartException.Code.NOT_FOUND);
@@ -88,7 +101,14 @@ public class DefaultGroupHandler implements GroupHandler{
     /** The group's members, in the order they joined. */
     @Override
     public void getMembers(String groupId, Callback<List<User>> callback) {
+        User current = session.getCurrentUser();
         Async.run(() -> {
+            if (current == null) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_LOGGED_IN);
+            }
+            if (!groups.isMember(groupId, current.getId())) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_A_MEMBER);
+            }
             return groups.findMembers(groupId);
         }, callback);
     }
@@ -96,7 +116,17 @@ public class DefaultGroupHandler implements GroupHandler{
     /** Every expense in the group, newest expense date first (R8). */
     @Override
     public void getGroupExpenses(String groupId, Callback<List<Expense>> callback) {
-        Async.run(() -> groups.findExpensesByGroup(groupId), callback);
+        User current = session.getCurrentUser();
+        Async.run(() -> {
+            if (current == null) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_LOGGED_IN);
+            }
+            if (!groups.isMember(groupId, current.getId())) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_A_MEMBER);
+            }
+
+            return groups.findExpensesByGroup(groupId);
+        }, callback);
     }
 
     /**
@@ -145,7 +175,16 @@ public class DefaultGroupHandler implements GroupHandler{
     @Override
     public void updateGroup(String groupId, String actorId, String name, String description,
                      List<String> memberEmails, Callback<Group> callback){
+        User current = session.getCurrentUser();
         Async.run(() -> {
+            // confirm current user is the actor
+            if (current == null) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_LOGGED_IN);
+            }
+            if (!current.getId().equals(actorId)) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_OWNER);
+            }
+
             Group g = groups.findGroupById(groupId);
 
             if(g == null) {
@@ -184,7 +223,16 @@ public class DefaultGroupHandler implements GroupHandler{
      */
     @Override
     public void deleteGroup(String groupId, String actorId, Callback<Void> callback) {
+        User current = session.getCurrentUser();
         Async.run(() -> {
+            // confirm current user is the actor
+            if (current == null) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_LOGGED_IN);
+            }
+            if (!current.getId().equals(actorId)) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_OWNER);
+            }
+
             Group g = groups.findGroupById(groupId);
 
             if(g == null) {
@@ -214,10 +262,6 @@ public class DefaultGroupHandler implements GroupHandler{
             // verify actor is owner
             return g.getOwnerId().equals(userId);
         }, callback);
-    }
-
-    private static UnsupportedOperationException notImplemented(int role) {
-        return new UnsupportedOperationException("Role " + role + " still has to write this");
     }
 }
 
