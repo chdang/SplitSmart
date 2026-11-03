@@ -1,6 +1,7 @@
 package edu.usc.splitsmart.logic;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
@@ -153,6 +154,24 @@ public class DefaultUserGroupBalanceHandlerTest {
         assertEquals(newer, items.get(0).getExpense());
         assertEquals(middle, items.get(1).getSettlement());
         assertEquals(older, items.get(2).getExpense());
+    }
+
+    @Test
+    public void historyLabelsEachItemByType() {
+        Expense older = expenseAt(Instant.ofEpochMilli(1000));
+        Expense newer = expenseAt(Instant.ofEpochMilli(3000));
+        Settlement middle = new Settlement("s", "g", BEN, BEN, ANA, 100,
+                Instant.ofEpochMilli(2000));
+
+        List<ActivityItem> items =
+                DefaultUserGroupBalanceHandler.history(list(older, newer), list(middle));
+
+        assertEquals(ActivityItem.Type.EXPENSE, items.get(0).getType());
+        assertNull(items.get(0).getSettlement());
+        assertEquals(ActivityItem.Type.SETTLEMENT, items.get(1).getType());
+        assertNull(items.get(1).getExpense());
+        assertEquals(ActivityItem.Type.EXPENSE, items.get(2).getType());
+        assertNull(items.get(2).getSettlement());
     }
 
     private Map<String, Long> balances(String userId, List<Expense> expenses,
