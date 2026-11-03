@@ -9,18 +9,17 @@ import java.time.YearMonth;
 import java.time.LocalDate;
 import java.util.List;
 import java.time.Instant;
-import java.time.LocalDate;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import edu.usc.splitsmart.model.Category;
 import edu.usc.splitsmart.model.Expense;
 import edu.usc.splitsmart.model.ExpenseShare;
+import edu.usc.splitsmart.model.Category;
+import edu.usc.splitsmart.model.SplitType;
 import edu.usc.splitsmart.model.Group;
 import edu.usc.splitsmart.model.Settlement;
-import edu.usc.splitsmart.model.SplitType;
 import edu.usc.splitsmart.model.User;
 
 /**
