@@ -54,7 +54,7 @@ Percentage shares also retain the original basis points so reopening the edit fo
 
 Role 5 can call `ExpenseHandler.getExpenses(groupId, userId, fromDate, toDate, callback)` to combine user and date filters. Each filter can be `null` to disable it. A user matches as payer or participant (including a zero share); being the creator alone does not match. Both date endpoints are inclusive and apply to the expense date, not the creation time. A reversed date range returns `INVALID_INPUT`. Results contain shares and sort by expense date descending, then creation time descending, then ID ascending for ties. The original unfiltered `getExpenses` method remains available.
 
-The existing `recordSettlement` entry point delegates to Role 3's real settlement repository. Role 5 still needs to include these persistent settlements in balances and history.
+The existing `recordSettlement` entry point delegates to Role 3's real settlement repository. Role 5's balances and history read these persistent settlements from the same repository.
 
 ## Tests
 
