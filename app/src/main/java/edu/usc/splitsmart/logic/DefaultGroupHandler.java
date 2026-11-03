@@ -132,9 +132,13 @@ public class DefaultGroupHandler implements GroupHandler{
         Async.run(() -> {
             Group g = groups.findGroupById(groupId);
 
-            // verify actor is owner
-            if(g != null && !g.getOwnerId().equals(actorId)) {
+            if(g == null) {
                 throw new SplitSmartException(SplitSmartException.Code.NOT_FOUND);
+            }
+
+            // verify actor is owner
+            if(!g.getOwnerId().equals(actorId)) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_OWNER);
             }
 
             // check member emails are linked to accounts
@@ -167,9 +171,13 @@ public class DefaultGroupHandler implements GroupHandler{
         Async.run(() -> {
             Group g = groups.findGroupById(groupId);
 
-            // verify actor is owner
-            if(g != null && !g.getOwnerId().equals(actorId)) {
+            if(g == null) {
                 throw new SplitSmartException(SplitSmartException.Code.NOT_FOUND);
+            }
+
+            // verify actor is owner
+            if(!g.getOwnerId().equals(actorId)) {
+                throw new SplitSmartException(SplitSmartException.Code.NOT_OWNER);
             }
 
             groups.deleteGroup(groupId);
