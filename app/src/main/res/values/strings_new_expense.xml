@@ -4,7 +4,7 @@
     <string name="expense_description">What was it for?</string>
     <string name="expense_note">Note (optional)</string>
     <string name="expense_paid_by">Paid by</string>
-    <string name="expense_date">Date</string>
+    <string name="expense_date">Date added</string>
     <string name="expense_category">Category</string>
     <string name="expense_split_how">How to split it</string>
     <string name="split_equal">Equally</string>

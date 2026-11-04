@@ -1,6 +1,5 @@
 package edu.usc.splitsmart.ui.expense;
 
-import android.app.DatePickerDialog;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -66,7 +65,6 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     private TextInputEditText amountInput;
     private TextInputLayout payerLayout;
     private AutoCompleteTextView payerInput;
-    private TextInputLayout dateLayout;
     private TextInputEditText dateInput;
     private TextInputLayout categoryLayout;
     private AutoCompleteTextView categoryInput;
@@ -116,7 +114,6 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
         amountInput = findViewById(R.id.amount_input);
         payerLayout = findViewById(R.id.payer_layout);
         payerInput = findViewById(R.id.payer_input);
-        dateLayout = findViewById(R.id.date_layout);
         dateInput = findViewById(R.id.date_input);
         categoryLayout = findViewById(R.id.category_layout);
         categoryInput = findViewById(R.id.category_input);
@@ -136,7 +133,7 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
         }
 
         setUpCategoryPicker();
-        setUpDatePicker();
+        setExpenseDate(expenseDate);
         payerInput.setOnItemClickListener((parent, view, position, id) -> {
             selectPayer(members.get(position));
             payerLayout.setError(null);
@@ -239,7 +236,6 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
         noteLayout.setEnabled(canEdit);
         amountLayout.setEnabled(canEdit);
         payerLayout.setEnabled(canEdit);
-        dateLayout.setEnabled(canEdit);
         categoryLayout.setEnabled(canEdit);
         for (int i = 0; i < splitTypeGroup.getChildCount(); i++) {
             splitTypeGroup.getChildAt(i).setEnabled(canEdit);
@@ -283,22 +279,6 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     private void setCategory(Category newCategory) {
         category = newCategory;
         categoryInput.setText(Labels.category(this, newCategory), false);
-    }
-
-    private void setUpDatePicker() {
-        setExpenseDate(expenseDate);
-        dateInput.setOnClickListener(v -> {
-            if (!editable) {
-                return;
-            }
-            DatePickerDialog dialog = new DatePickerDialog(this,
-                    (picker, year, monthIndex, day) ->
-                            setExpenseDate(LocalDate.of(year, monthIndex + 1, day)),
-                    expenseDate.getYear(), expenseDate.getMonthValue() - 1,
-                    expenseDate.getDayOfMonth());
-            dialog.getDatePicker().setMaxDate(System.currentTimeMillis());
-            dialog.show();
-        });
     }
 
     private void setExpenseDate(LocalDate date) {

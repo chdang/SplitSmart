@@ -27,15 +27,15 @@
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/receiver_layout"
+                android:id="@+id/other_layout"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:hint="@string/settle_up_receiver">
+                android:hint="@string/settle_up_other">
 
                 <AutoCompleteTextView
-                    android:id="@+id/receiver_input"
+                    android:id="@+id/other_input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none" />
@@ -50,6 +50,41 @@
                 android:layout_marginTop="4dp"
                 android:textAppearance="?attr/textAppearanceBodySmall"
                 android:visibility="gone" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/settle_up_direction"
+                android:textAppearance="@style/TextAppearance.SplitSmart.SectionLabel" />
+
+            <!-- Either side of a payment can record it, so the direction is a choice (R16). -->
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/direction_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:checkedButton="@+id/direction_i_paid"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+
+                <Button
+                    android:id="@+id/direction_i_paid"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/settle_up_i_paid" />
+
+                <Button
+                    android:id="@+id/direction_they_paid"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/settle_up_they_paid" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/amount_layout"

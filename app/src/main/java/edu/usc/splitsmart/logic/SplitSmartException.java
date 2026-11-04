@@ -29,6 +29,11 @@ public class SplitSmartException extends Exception {
         MISSING_ACCOUNTS,
         /** The amount is zero, negative, or not a valid amount of money. */
         INVALID_AMOUNT,
+        /**
+         * A settlement is for more than the payer currently owes the receiver (R16).
+         * {@link #getDetails()} holds the owed cents as a string.
+         */
+        AMOUNT_ABOVE_DEBT,
         /** The shares don't add up to the total, or the participants aren't valid. */
         INVALID_SPLIT,
         /** The group, expense, or user doesn't exist. */

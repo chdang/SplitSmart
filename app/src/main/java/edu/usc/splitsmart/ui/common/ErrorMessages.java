@@ -38,6 +38,9 @@ public final class ErrorMessages {
                         TextUtils.join(", ", known.getDetails()));
             case INVALID_AMOUNT:
                 return context.getString(R.string.error_invalid_amount);
+            case AMOUNT_ABOVE_DEBT:
+                return context.getString(R.string.error_amount_above_debt,
+                        Money.format(owedCents(known)));
             case INVALID_SPLIT:
                 return context.getString(R.string.error_invalid_split);
             case NOT_FOUND:
@@ -46,6 +49,18 @@ public final class ErrorMessages {
                 return context.getString(R.string.error_invalid_input);
             default:
                 return context.getString(R.string.error_generic);
+        }
+    }
+
+    /** The owed cents carried by an AMOUNT_ABOVE_DEBT error, or 0 if it's missing. */
+    private static long owedCents(SplitSmartException error) {
+        if (error.getDetails().isEmpty()) {
+            return 0;
+        }
+        try {
+            return Long.parseLong(error.getDetails().get(0));
+        } catch (NumberFormatException malformed) {
+            return 0;
         }
     }
 

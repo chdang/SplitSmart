@@ -179,6 +179,9 @@ public class ExpenseIntegrationTest {
         assertEquals(created.getId(), updated.getId());
         assertEquals(created.getCreatedAt().toEpochMilli(), updated.getCreatedAt().toEpochMilli());
         Expense stored = groups.findExpenseById(created.getId());
+        // The revised draft asked for an earlier date, but the date is fixed at creation so an
+        // edit can never move the expense into a different monthly summary (R17).
+        assertEquals(DATE, stored.getExpenseDate());
         assertEquals(Arrays.asList(SAM, TOMMY), participantIds(stored));
         assertFalse(stored.hasShareFor(ALEX));
         assertEquals(2000, stored.owedBy(SAM));
@@ -274,10 +277,15 @@ public class ExpenseIntegrationTest {
 
     @Test
     public void existingSettlementEntryPointUsesRealRepositoryAndCurrentRecorder() {
+        // Sam fronted $10 split evenly, so Alex owes Sam $5 and has a debt worth settling.
+        create(draft(GROUP, SAM, 1000, SplitType.EQUAL, DATE, allocations(ALEX, 0L, SAM, 0L)));
         Settlement settlement = ExpenseIntegrationTest.<Settlement>await(cb ->
                 handler.recordSettlement(GROUP, ALEX, SAM, 100, "", cb)).value();
         assertEquals(TOMMY, settlement.getRecorderId());
         assertEquals(1, groups.findSettlementsByGroup(GROUP).size());
+        // $1 of the $5 is now paid off, so $4.01 is more than Alex still owes.
+        assertError(SplitSmartException.Code.AMOUNT_ABOVE_DEBT,
+                ExpenseIntegrationTest.<Settlement>await(cb -> handler.recordSettlement(GROUP, ALEX, SAM, 401, "", cb)));
         assertError(SplitSmartException.Code.INVALID_AMOUNT,
                 ExpenseIntegrationTest.<Settlement>await(cb -> handler.recordSettlement(GROUP, ALEX, SAM, 0, "", cb)));
         assertError(SplitSmartException.Code.INVALID_INPUT,
