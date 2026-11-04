@@ -95,20 +95,91 @@ public final class DefaultExpenseHandler implements ExpenseHandler {
     /** Compatibility with the existing interface; settlement storage belongs to Role 3. */
     @Override
     public void recordSettlement(String groupId, String payerId, String receiverId, long amountCents,
+                                 String note, Callback<Settlement> callback) {
+        withCurrentUser(currentId -> {
+            checkSettlement(groupId, payerId, receiverId, amountCents);
+            requireMember(groupId, currentId);
+            return groups.saveSettlement(groupId, currentId, payerId, receiverId,
+                    amountCents, trimmed(note), Instant.now());
+        }, callback);
+    }
+
+    @Override
+    public void getSettlement(String settlementId, Callback<Settlement> callback) {
+        withCurrentUser(currentId -> {
+            Settlement settlement = requireSettlement(settlementId);
+            requireMember(settlement.getGroupId(), currentId);
+            return settlement;
+        }, callback);
+    }
+
+    @Override
+    public void updateSettlement(String settlementId, String actorId, String payerId,
+                                 String receiverId, long amountCents, String note,
                                  Callback<Settlement> callback) {
         withCurrentUser(currentId -> {
-            if (amountCents <= 0) {
-                throw error(SplitSmartException.Code.INVALID_AMOUNT);
-            }
-            if (isBlank(payerId) || isBlank(receiverId) || payerId.equals(receiverId)) {
-                throw error(SplitSmartException.Code.INVALID_INPUT);
-            }
-            requireMember(groupId, currentId);
-            requireMember(groupId, payerId);
-            requireMember(groupId, receiverId);
-            return groups.saveSettlement(groupId, currentId, payerId, receiverId,
-                    amountCents, Instant.now());
+            Settlement existing = requireSettlement(settlementId);
+            requireRecorder(existing, currentId, actorId);
+            checkSettlement(existing.getGroupId(), payerId, receiverId, amountCents);
+            return groups.updateSettlement(settlementId, payerId, receiverId, amountCents,
+                    trimmed(note));
         }, callback);
+    }
+
+    @Override
+    public void deleteSettlement(String settlementId, String actorId, Callback<Void> callback) {
+        withCurrentUser(currentId -> {
+            Settlement existing = requireSettlement(settlementId);
+            requireRecorder(existing, currentId, actorId);
+            requireMember(existing.getGroupId(), currentId);
+            groups.deleteSettlement(settlementId);
+            return null;
+        }, callback);
+    }
+
+    @Override
+    public void authenticateRecorder(String settlementId, String userId,
+                                     Callback<Boolean> callback) {
+        withCurrentUser(currentId -> {
+            Settlement existing = groups.findSettlementById(settlementId);
+            if (existing == null) {
+                return false;
+            }
+            requireMember(existing.getGroupId(), currentId);
+            return existing.getRecorderId().equals(userId);
+        }, callback);
+    }
+
+    /** The amount and the two people, checked the same way for a new and an edited settlement. */
+    private void checkSettlement(String groupId, String payerId, String receiverId,
+                                 long amountCents) throws SplitSmartException {
+        if (amountCents <= 0) {
+            throw error(SplitSmartException.Code.INVALID_AMOUNT);
+        }
+        if (isBlank(payerId) || isBlank(receiverId) || payerId.equals(receiverId)) {
+            throw error(SplitSmartException.Code.INVALID_INPUT);
+        }
+        requireMember(groupId, payerId);
+        requireMember(groupId, receiverId);
+    }
+
+    private Settlement requireSettlement(String id) throws SplitSmartException {
+        Settlement settlement = groups.findSettlementById(id);
+        if (settlement == null) {
+            throw error(SplitSmartException.Code.NOT_FOUND);
+        }
+        return settlement;
+    }
+
+    private void requireRecorder(Settlement settlement, String currentId, String actorId)
+            throws SplitSmartException {
+        if (!currentId.equals(actorId) || !settlement.getRecorderId().equals(currentId)) {
+            throw error(SplitSmartException.Code.NOT_RECORDER);
+        }
+    }
+
+    private static String trimmed(String note) {
+        return note == null ? "" : note.trim();
     }
 
     private Expense build(String id, String creatorId, ExpenseDraft draft, Instant createdAt)
@@ -138,8 +209,9 @@ public final class DefaultExpenseHandler implements ExpenseHandler {
             throw error(SplitSmartException.Code.INVALID_SPLIT);
         }
         return new Expense(id, draft.getGroupId(), creatorId, draft.getPayerId(),
-                draft.getDescription().trim(), draft.getTotalCents(), draft.getCategory(),
-                draft.getSplitType(), draft.getExpenseDate(), createdAt, shares);
+                draft.getDescription().trim(), trimmed(draft.getNote()), draft.getTotalCents(),
+                draft.getCategory(), draft.getSplitType(), draft.getExpenseDate(), createdAt,
+                shares);
     }
 
     private Expense requireExpense(String id) throws SplitSmartException {

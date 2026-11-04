@@ -68,6 +68,25 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/note_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="@string/settle_up_note">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/note_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="top"
+                    android:imeOptions="actionDone"
+                    android:inputType="textCapSentences|textMultiLine"
+                    android:maxLines="3"
+                    android:minLines="2" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
             <Button
                 android:id="@+id/record_button"
                 android:layout_width="match_parent"

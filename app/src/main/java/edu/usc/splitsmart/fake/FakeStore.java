@@ -172,14 +172,14 @@ public final class FakeStore {
                             long totalCents, Category category, SplitType splitType, int daysAgo,
                             Map<String, Long> allocations) {
         String id = newId();
-        expenses.put(id, new Expense(id, groupId, creatorId, payerId, description, totalCents,
+        expenses.put(id, new Expense(id, groupId, creatorId, payerId, description, "", totalCents,
                 category, splitType, LocalDate.now().minusDays(daysAgo), daysAgoInstant(daysAgo),
                 FakeExpenseHandler.calculateShares(id, totalCents, splitType, allocations)));
     }
 
     private void addSettlement(String groupId, String payerId, String receiverId, long cents,
                                int daysAgo) {
-        settlements.add(new Settlement(newId(), groupId, payerId, payerId, receiverId, cents,
+        settlements.add(new Settlement(newId(), groupId, payerId, payerId, receiverId, cents, "",
                 daysAgoInstant(daysAgo)));
     }
 

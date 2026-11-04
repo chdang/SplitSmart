@@ -31,6 +31,7 @@
     <string name="error_not_a_member">You\'re not a member of this group</string>
     <string name="error_not_owner">Only the group owner can do that</string>
     <string name="error_not_creator">Only the person who added this expense can change it</string>
+    <string name="error_not_recorder">Only the person who recorded this payment can change it</string>
     <string name="error_missing_accounts">No SplitSmart account for: %1$s</string>
     <string name="error_invalid_amount">Enter an amount greater than $0</string>
     <string name="error_invalid_split">The shares don\'t add up to the total</string>

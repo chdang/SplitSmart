@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settlement_details">Payment details</string>
+    <string name="settlement_edit">Edit payment</string>
+    <string name="settlement_payer">Who paid</string>
+    <string name="settlement_receiver">Who was paid</string>
+    <string name="settlement_recorded_on">Recorded %1$s</string>
+    <string name="settlement_save">Save payment</string>
+    <string name="settlement_delete">Delete payment</string>
+    <string name="settlement_read_only">Only %1$s can edit or delete this payment, since they recorded it.</string>
+    <string name="settlement_pick_payer">Pick who paid</string>
+    <string name="settlement_pick_receiver">Pick who was paid</string>
+    <string name="settlement_same_person">Pick two different people</string>
+    <string name="settlement_updated">Payment updated</string>
+    <string name="settlement_deleted">Payment deleted</string>
+    <string name="settlement_delete_title">Delete this payment?</string>
+    <string name="settlement_delete_message">The %1$s payment will be removed and everyone\'s balances will update. This can\'t be undone.</string>
+</resources>

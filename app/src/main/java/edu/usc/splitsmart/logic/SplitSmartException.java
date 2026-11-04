@@ -23,6 +23,8 @@ public class SplitSmartException extends Exception {
         NOT_OWNER,
         /** Only the expense creator can do this (R7). */
         NOT_CREATOR,
+        /** Only the member who recorded the settlement can do this (R16). */
+        NOT_RECORDER,
         /** Some member emails don't have accounts. {@link #getDetails()} lists them. */
         MISSING_ACCOUNTS,
         /** The amount is zero, negative, or not a valid amount of money. */

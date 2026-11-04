@@ -18,6 +18,7 @@ public final class Expense {
     private final String creatorId;
     private final String payerId;
     private final String description;
+    private final String note;
     private final long totalCents;
     private final Category category;
     private final SplitType splitType;
@@ -26,13 +27,14 @@ public final class Expense {
     private final List<ExpenseShare> shares;
 
     public Expense(String id, String groupId, String creatorId, String payerId, String description,
-                   long totalCents, Category category, SplitType splitType, LocalDate expenseDate,
-                   Instant createdAt, List<ExpenseShare> shares) {
+                   String note, long totalCents, Category category, SplitType splitType,
+                   LocalDate expenseDate, Instant createdAt, List<ExpenseShare> shares) {
         this.id = id;
         this.groupId = groupId;
         this.creatorId = creatorId;
         this.payerId = payerId;
         this.description = description;
+        this.note = note == null ? "" : note;
         this.totalCents = totalCents;
         this.category = category;
         this.splitType = splitType;
@@ -59,6 +61,11 @@ public final class Expense {
 
     public String getDescription() {
         return description;
+    }
+
+    /** The user's optional free-text note, or "" when they didn't write one. */
+    public String getNote() {
+        return note;
     }
 
     public long getTotalCents() {

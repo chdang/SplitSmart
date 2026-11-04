@@ -31,6 +31,8 @@ public final class ErrorMessages {
                 return context.getString(R.string.error_not_owner);
             case NOT_CREATOR:
                 return context.getString(R.string.error_not_creator);
+            case NOT_RECORDER:
+                return context.getString(R.string.error_not_recorder);
             case MISSING_ACCOUNTS:
                 return context.getString(R.string.error_missing_accounts,
                         TextUtils.join(", ", known.getDetails()));

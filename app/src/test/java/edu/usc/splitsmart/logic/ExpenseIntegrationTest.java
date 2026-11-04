@@ -141,9 +141,9 @@ public class ExpenseIntegrationTest {
                 draft(GROUP, ALEX, 100, null, DATE, allocations(TOMMY, 0L)),
                 draft(GROUP, ALEX, 100, SplitType.EQUAL, null, allocations(TOMMY, 0L)),
                 draft(GROUP, ALEX, 100, SplitType.EQUAL, DATE, Collections.emptyMap()),
-                new ExpenseDraft(GROUP, ALEX, " ", 100, Category.FOOD, SplitType.EQUAL,
+                new ExpenseDraft(GROUP, ALEX, " ", "", 100, Category.FOOD, SplitType.EQUAL,
                         DATE, allocations(TOMMY, 0L)),
-                new ExpenseDraft(GROUP, ALEX, "Dinner", 100, null, SplitType.EQUAL,
+                new ExpenseDraft(GROUP, ALEX, "Dinner", "", 100, null, SplitType.EQUAL,
                         DATE, allocations(TOMMY, 0L)));
         for (ExpenseDraft draft : invalid) {
             Result<Expense> result = ExpenseIntegrationTest.<Expense>await(cb -> handler.createExpense(TOMMY, draft, cb));
@@ -275,15 +275,15 @@ public class ExpenseIntegrationTest {
     @Test
     public void existingSettlementEntryPointUsesRealRepositoryAndCurrentRecorder() {
         Settlement settlement = ExpenseIntegrationTest.<Settlement>await(cb ->
-                handler.recordSettlement(GROUP, ALEX, SAM, 100, cb)).value();
+                handler.recordSettlement(GROUP, ALEX, SAM, 100, "", cb)).value();
         assertEquals(TOMMY, settlement.getRecorderId());
         assertEquals(1, groups.findSettlementsByGroup(GROUP).size());
         assertError(SplitSmartException.Code.INVALID_AMOUNT,
-                ExpenseIntegrationTest.<Settlement>await(cb -> handler.recordSettlement(GROUP, ALEX, SAM, 0, cb)));
+                ExpenseIntegrationTest.<Settlement>await(cb -> handler.recordSettlement(GROUP, ALEX, SAM, 0, "", cb)));
         assertError(SplitSmartException.Code.INVALID_INPUT,
-                ExpenseIntegrationTest.<Settlement>await(cb -> handler.recordSettlement(GROUP, ALEX, ALEX, 1, cb)));
+                ExpenseIntegrationTest.<Settlement>await(cb -> handler.recordSettlement(GROUP, ALEX, ALEX, 1, "", cb)));
         assertError(SplitSmartException.Code.NOT_A_MEMBER,
-                ExpenseIntegrationTest.<Settlement>await(cb -> handler.recordSettlement(GROUP, ALEX, "u-priya", 1, cb)));
+                ExpenseIntegrationTest.<Settlement>await(cb -> handler.recordSettlement(GROUP, ALEX, "u-priya", 1, "", cb)));
     }
 
     @Test
@@ -345,7 +345,9 @@ public class ExpenseIntegrationTest {
     public void upgradingVersionOnePreservesExistingAccountsGroupsExpensesAndShares() {
         Expense created = create(standardDraft());
         SQLiteDatabase db = database.getWritableDatabase();
-        // Restore precisely the v1 shares table, then let SQLiteOpenHelper perform the upgrade.
+        // Restore precisely the v1 tables, then let SQLiteOpenHelper perform the upgrade. Foreign
+        // keys are off while tables are swapped so the drops do not cascade the rows away.
+        db.setForeignKeyConstraintsEnabled(false);
         db.execSQL("CREATE TABLE legacy_shares (expense_id TEXT NOT NULL REFERENCES expenses(id) "
                 + "ON DELETE CASCADE, user_id TEXT NOT NULL REFERENCES users(id), "
                 + "owed_cents INTEGER NOT NULL, position INTEGER NOT NULL, "
@@ -355,6 +357,33 @@ public class ExpenseIntegrationTest {
         db.execSQL("DROP TABLE expense_shares");
         db.execSQL("ALTER TABLE legacy_shares RENAME TO expense_shares");
         db.execSQL("CREATE INDEX idx_shares_expense ON expense_shares(expense_id)");
+        // v1 had no note column on either table, so the upgrade has one to add. SQLite here is
+        // too old for ALTER TABLE DROP COLUMN, so both tables are rebuilt without it.
+        db.execSQL("CREATE TABLE legacy_expenses (id TEXT PRIMARY KEY, "
+                + "group_id TEXT NOT NULL REFERENCES split_groups(id) ON DELETE CASCADE, "
+                + "creator_id TEXT NOT NULL REFERENCES users(id), "
+                + "payer_id TEXT NOT NULL REFERENCES users(id), description TEXT NOT NULL, "
+                + "total_cents INTEGER NOT NULL, category TEXT NOT NULL, "
+                + "split_type TEXT NOT NULL, expense_date TEXT NOT NULL, "
+                + "created_at INTEGER NOT NULL)");
+        db.execSQL("INSERT INTO legacy_expenses SELECT id, group_id, creator_id, payer_id, "
+                + "description, total_cents, category, split_type, expense_date, created_at "
+                + "FROM expenses");
+        db.execSQL("DROP TABLE expenses");
+        db.execSQL("ALTER TABLE legacy_expenses RENAME TO expenses");
+        db.execSQL("CREATE INDEX idx_expenses_group ON expenses(group_id)");
+
+        db.execSQL("CREATE TABLE legacy_settlements (id TEXT PRIMARY KEY, "
+                + "group_id TEXT NOT NULL REFERENCES split_groups(id) ON DELETE CASCADE, "
+                + "recorder_id TEXT NOT NULL REFERENCES users(id), "
+                + "payer_id TEXT NOT NULL REFERENCES users(id), "
+                + "receiver_id TEXT NOT NULL REFERENCES users(id), "
+                + "amount_cents INTEGER NOT NULL, settled_at INTEGER NOT NULL)");
+        db.execSQL("INSERT INTO legacy_settlements SELECT id, group_id, recorder_id, payer_id, "
+                + "receiver_id, amount_cents, settled_at FROM settlements");
+        db.execSQL("DROP TABLE settlements");
+        db.execSQL("ALTER TABLE legacy_settlements RENAME TO settlements");
+        db.execSQL("CREATE INDEX idx_settlements_group ON settlements(group_id)");
         db.setVersion(1);
         database.close();
 
@@ -362,13 +391,15 @@ public class ExpenseIntegrationTest {
         groups = new SqliteGroupRepository(database);
         users = new SqliteUserRepository(database);
         Expense retained = groups.findExpenseById(created.getId());
-        assertEquals(2, database.getReadableDatabase().getVersion());
+        assertEquals(3, database.getReadableDatabase().getVersion());
         assertNotNull(users.findById(TOMMY));
         assertTrue(groups.isMember(GROUP, TOMMY));
         assertEquals(1000, retained.getTotalCents());
         assertEquals(500, retained.owedBy(ALEX));
         assertEquals(Arrays.asList(TOMMY, ALEX), participantIds(retained));
         assertNull(retained.getShares().get(0).getBasisPoints());
+        // Rows that predate the note column read back as "" rather than null.
+        assertEquals("", retained.getNote());
     }
 
     private Expense create(ExpenseDraft draft) {
@@ -393,11 +424,12 @@ public class ExpenseIntegrationTest {
 
     private static ExpenseDraft draft(String group, String payer, long total, SplitType type,
                                        LocalDate date, Map<String, Long> allocations) {
-        return new ExpenseDraft(group, payer, " Dinner ", total, Category.FOOD, type, date, allocations);
+        return new ExpenseDraft(group, payer, " Dinner ", "", total, Category.FOOD, type, date,
+                allocations);
     }
 
     private static Expense expense(String id, long total, List<ExpenseShare> shares) {
-        return new Expense(id, GROUP, TOMMY, ALEX, "Changed", total, Category.FOOD,
+        return new Expense(id, GROUP, TOMMY, ALEX, "Changed", "", total, Category.FOOD,
                 SplitType.EXACT_AMOUNT, DATE, Instant.now(), shares);
     }
 

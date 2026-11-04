@@ -1,5 +1,6 @@
 package edu.usc.splitsmart.ui.report;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -8,7 +9,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import edu.usc.splitsmart.AppServices;
 import edu.usc.splitsmart.R;
+import edu.usc.splitsmart.logic.ActivityItem;
+import edu.usc.splitsmart.ui.balance.EditSettlementActivity;
+import edu.usc.splitsmart.ui.common.Extras;
 import edu.usc.splitsmart.ui.common.GroupScopedActivity;
+import edu.usc.splitsmart.ui.expense.EditExpenseActivity;
 
 /** Every expense and payment in the group, newest first (R15). */
 public class HistoryActivity extends GroupScopedActivity {
@@ -27,7 +32,7 @@ public class HistoryActivity extends GroupScopedActivity {
 
     @Override
     protected void onMemberVerified() {
-        adapter = new HistoryAdapter(currentUser.getId());
+        adapter = new HistoryAdapter(currentUser.getId(), this::openItem);
         RecyclerView list = findViewById(R.id.history_list);
         list.setLayoutManager(new LinearLayoutManager(this));
         list.setAdapter(adapter);
@@ -38,5 +43,15 @@ public class HistoryActivity extends GroupScopedActivity {
                     adapter.submit(members, items);
                     emptyView.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
                 }))));
+    }
+
+    /** Opens the full details of a row, where its creator or recorder can edit or delete it. */
+    private void openItem(ActivityItem item) {
+        Intent intent = item.getType() == ActivityItem.Type.EXPENSE
+                ? new Intent(this, EditExpenseActivity.class)
+                        .putExtra(Extras.EXPENSE_ID, item.getExpense().getId())
+                : new Intent(this, EditSettlementActivity.class)
+                        .putExtra(Extras.SETTLEMENT_ID, item.getSettlement().getId());
+        startActivity(intent.putExtra(Extras.GROUP_ID, groupId));
     }
 }

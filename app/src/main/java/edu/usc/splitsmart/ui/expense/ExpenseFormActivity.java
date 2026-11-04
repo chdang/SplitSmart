@@ -60,6 +60,8 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
 
     private TextInputLayout descriptionLayout;
     private TextInputEditText descriptionInput;
+    private TextInputLayout noteLayout;
+    private TextInputEditText noteInput;
     private TextInputLayout amountLayout;
     private TextInputEditText amountInput;
     private TextInputLayout payerLayout;
@@ -108,6 +110,8 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
         readOnlyBanner = findViewById(R.id.read_only_banner);
         descriptionLayout = findViewById(R.id.description_layout);
         descriptionInput = findViewById(R.id.description_input);
+        noteLayout = findViewById(R.id.note_layout);
+        noteInput = findViewById(R.id.note_input);
         amountLayout = findViewById(R.id.amount_layout);
         amountInput = findViewById(R.id.amount_input);
         payerLayout = findViewById(R.id.payer_layout);
@@ -199,6 +203,7 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     /** Fills every field from an existing expense. */
     protected void fill(Expense expense) {
         descriptionInput.setText(expense.getDescription());
+        noteInput.setText(expense.getNote());
         amountInput.setText(Money.toInput(expense.getTotalCents()));
         setCategory(expense.getCategory());
         setExpenseDate(expense.getExpenseDate());
@@ -231,6 +236,7 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     protected void setEditable(boolean canEdit) {
         editable = canEdit;
         descriptionLayout.setEnabled(canEdit);
+        noteLayout.setEnabled(canEdit);
         amountLayout.setEnabled(canEdit);
         payerLayout.setEnabled(canEdit);
         dateLayout.setEnabled(canEdit);
@@ -576,8 +582,8 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
             showMessage(getString(R.string.error_split_exact_total, Money.format(total)));
             return null;
         }
-        return new ExpenseDraft(groupId, payer.getId(), description, total, category, splitType,
-                expenseDate, allocations);
+        return new ExpenseDraft(groupId, payer.getId(), description, textOf(noteInput), total,
+                category, splitType, expenseDate, allocations);
     }
 
     // ---------------------------------------------------------------------------------------

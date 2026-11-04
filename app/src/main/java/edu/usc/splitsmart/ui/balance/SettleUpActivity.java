@@ -42,6 +42,7 @@ public class SettleUpActivity extends GroupScopedActivity {
     private ColorStateList neutralColor;
     private TextInputLayout amountLayout;
     private TextInputEditText amountInput;
+    private TextInputEditText noteInput;
     private Button recordButton;
 
     @Override
@@ -56,6 +57,7 @@ public class SettleUpActivity extends GroupScopedActivity {
         neutralColor = balanceHint.getTextColors();
         amountLayout = findViewById(R.id.amount_layout);
         amountInput = findViewById(R.id.amount_input);
+        noteInput = findViewById(R.id.note_input);
         recordButton = findViewById(R.id.record_button);
 
         receiverInput.setOnItemClickListener((parent, view, position, id) ->
@@ -151,7 +153,7 @@ public class SettleUpActivity extends GroupScopedActivity {
         setLoading(true);
         recordButton.setEnabled(false);
         AppServices.expenses().recordSettlement(groupId, currentUser.getId(), receiver.getId(),
-                amount, onUi(settlement -> {
+                amount, textOf(noteInput), onUi(settlement -> {
                     Toast.makeText(this, R.string.settle_up_recorded, Toast.LENGTH_SHORT).show();
                     finish();
                 }, error -> {
