@@ -42,8 +42,8 @@ public class DefaultGroupHandler implements GroupHandler{
     public void createGroup(String ownerId, String name, String description, List<String> emails,
                      Callback<Group> callback) {
         Async.run(() -> {
-            // check for blank name and throw INVALID_INPUT
-            if (name.isEmpty()) {
+            // check for blank name and throw INVALID_INPUT ("   " counts as blank)
+            if (name.trim().isEmpty()) {
                 throw new SplitSmartException(SplitSmartException.Code.INVALID_INPUT);
             }
 
@@ -64,7 +64,8 @@ public class DefaultGroupHandler implements GroupHandler{
             }
 
             Instant createdAt = Instant.now();
-            return groups.saveGroup(name, description, ownerId, createdAt, new ArrayList<>(memberIds));
+            return groups.saveGroup(name.trim(), description, ownerId, createdAt,
+                    new ArrayList<>(memberIds));
         }, callback);
     }
 
@@ -203,7 +204,8 @@ public class DefaultGroupHandler implements GroupHandler{
             for (String email : memberEmails) {
                 User u = users.findByEmail(email);
                 if (u == null) missing.add(email);
-                else memberIds.add(u.getId());
+                // existing members stay as they are; adding them again breaks the primary key
+                else if (!groups.isMember(groupId, u.getId())) memberIds.add(u.getId());
             }
 
             if(!missing.isEmpty()){
