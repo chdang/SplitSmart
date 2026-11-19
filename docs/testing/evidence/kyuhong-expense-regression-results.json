@@ -1,0 +1,32 @@
+{
+  "command": "./gradlew :app:testDebugUnitTest --tests '*ExpenseIntegrationTest' --tests '*SplitCalculatorTest' --tests '*SettlementsAndSplittingWhiteBoxTest' :app:lintDebug",
+  "scope": "Existing expense/split regression tests plus the five new assigned white-box cases, after the edit-form selection fix.",
+  "tests": 29,
+  "failures": 0,
+  "suites": [
+    {
+      "name": "edu.usc.splitsmart.logic.ExpenseIntegrationTest",
+      "tests": "14",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "98.217"
+    },
+    {
+      "name": "edu.usc.splitsmart.logic.SettlementsAndSplittingWhiteBoxTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "2.435"
+    },
+    {
+      "name": "edu.usc.splitsmart.logic.SplitCalculatorTest",
+      "tests": "10",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.296"
+    }
+  ]
+}

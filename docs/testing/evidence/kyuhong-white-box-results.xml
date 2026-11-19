@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="edu.usc.splitsmart.logic.SettlementsAndSplittingWhiteBoxTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-19T01:20:06" hostname="Kyuhongs-MacBook-Pro-2.local" time="18.9">
+  <properties/>
+  <testcase name="exactSplitCoversBoundedValidationAndCopiesAllocations" classname="edu.usc.splitsmart.logic.SettlementsAndSplittingWhiteBoxTest" time="16.501"/>
+  <testcase name="settlementValidationRejectsInvalidRequestsWithoutWriting" classname="edu.usc.splitsmart.logic.SettlementsAndSplittingWhiteBoxTest" time="1.204"/>
+  <testcase name="equalSplitCoversValidationAndPennyRemainderBranches" classname="edu.usc.splitsmart.logic.SettlementsAndSplittingWhiteBoxTest" time="0.187"/>
+  <testcase name="settlementDebtBoundaryAndEditExcludeExistingPayment" classname="edu.usc.splitsmart.logic.SettlementsAndSplittingWhiteBoxTest" time="0.809"/>
+  <testcase name="percentageSplitCoversValidationOrderingAndOverflowSafeMath" classname="edu.usc.splitsmart.logic.SettlementsAndSplittingWhiteBoxTest" time="0.197"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

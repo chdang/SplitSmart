@@ -305,7 +305,22 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     }
 
     private void selectSplitType(SplitType type) {
-        splitTypeGroup.check(buttonFor(type));
+        // MaterialButton ignores checked-state changes while disabled. During loading the
+        // creator check keeps the form read-only, but the saved mode must still be displayed.
+        // Enable all options only for this synchronous update, then restore their permissions.
+        boolean[] enabled = new boolean[splitTypeGroup.getChildCount()];
+        for (int i = 0; i < enabled.length; i++) {
+            View option = splitTypeGroup.getChildAt(i);
+            enabled[i] = option.isEnabled();
+            option.setEnabled(true);
+        }
+        try {
+            splitTypeGroup.check(buttonFor(type));
+        } finally {
+            for (int i = 0; i < enabled.length; i++) {
+                splitTypeGroup.getChildAt(i).setEnabled(enabled[i]);
+            }
+        }
         // check() only notifies the listener when the selection changes.
         if (type != splitType) {
             applySplitType(type);

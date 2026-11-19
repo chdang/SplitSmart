@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest" tests="5" failures="0" errors="0" skipped="0" time="363.321" timestamp="2026-11-19T01:19:59" hostname="localhost">
+  <properties>
+    <property name="device" value="Pixel_4(AVD) - 17" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="test19PartialAndFinalSettlementsAreSavedAndReduceDebt" classname="edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest" time="99.935" />
+  <testcase name="test20InvalidOrExcessSettlementsDoNotChangeDebt" classname="edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest" time="87.731" />
+  <testcase name="test16EqualSplitConservesPenniesAfterReopening" classname="edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest" time="41.612" />
+  <testcase name="test18ExactAmountsMustMatchTheTotal" classname="edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest" time="54.377" />
+  <testcase name="test17PercentageRequiresOneHundredAndPreservesRounding" classname="edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest" time="46.111" />
+</testsuite>

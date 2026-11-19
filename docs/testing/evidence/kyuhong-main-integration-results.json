@@ -1,0 +1,93 @@
+{
+  "base_main": "ca0c3d58992f71a4a7c251ab16270300f02926ab",
+  "command": "./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug",
+  "tests": 73,
+  "failures": 0,
+  "errors": 0,
+  "suites": [
+    {
+      "name": "edu.usc.splitsmart.logic.BalanceCalculationWhiteBoxTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.usc.splitsmart.logic.DefaultExpenseHandlerTest",
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.usc.splitsmart.logic.DefaultGroupHandlerMonthlyStatsMembershipTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.usc.splitsmart.logic.DefaultGroupHandlerOwnerCheckTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.usc.splitsmart.logic.DefaultUserGroupBalanceHandlerTest",
+      "tests": "10",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.usc.splitsmart.logic.ExpenseIntegrationTest",
+      "tests": "14",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.usc.splitsmart.logic.HistoryMonthlyWhiteBoxTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.usc.splitsmart.logic.MonthlyStatisticsTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.usc.splitsmart.logic.SettlementsAndSplittingWhiteBoxTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.usc.splitsmart.logic.SplitCalculatorTest",
+      "tests": "10",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.usc.splitsmart.logic.UserGroupManagementUnitTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.usc.splitsmart.ui.report.HistoryFilterWhiteBoxTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ]
+}

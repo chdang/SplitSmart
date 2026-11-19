@@ -1,0 +1,59 @@
+{
+  "command": "./gradlew :app:testDebugUnitTest --tests '*SettlementsAndSplittingWhiteBoxTest' :app:createDebugUnitTestCoverageReport",
+  "metric": "JaCoCo executable LINE and BRANCH coverage",
+  "scope": "Only Kyuhong Lee white-box cases 16-20. Class totals include all methods; XML is an extract of these two production classes from the generated report.",
+  "classes": {
+    "edu/usc/splitsmart/logic/SplitCalculator": {
+      "BRANCH": {
+        "covered": 38,
+        "missed": 0
+      },
+      "LINE": {
+        "covered": 43,
+        "missed": 0
+      }
+    },
+    "edu/usc/splitsmart/logic/DefaultExpenseHandler": {
+      "BRANCH": {
+        "covered": 45,
+        "missed": 29
+      },
+      "LINE": {
+        "covered": 93,
+        "missed": 54
+      }
+    }
+  },
+  "settlement_helper_methods": {
+    "checkSettlement": {
+      "BRANCH": {
+        "covered": 8,
+        "missed": 0
+      },
+      "LINE": {
+        "covered": 7,
+        "missed": 0
+      }
+    },
+    "requireWithinDebt": {
+      "BRANCH": {
+        "covered": 6,
+        "missed": 0
+      },
+      "LINE": {
+        "covered": 12,
+        "missed": 0
+      }
+    },
+    "requireRecorder": {
+      "BRANCH": {
+        "covered": 4,
+        "missed": 0
+      },
+      "LINE": {
+        "covered": 3,
+        "missed": 0
+      }
+    }
+  }
+}

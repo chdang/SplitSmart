@@ -59,3 +59,21 @@ The existing `recordSettlement` entry point delegates to Role 3's real settlemen
 ## Tests
 
 Run `./gradlew testDebugUnitTest` for split-calculator tests and Robolectric integration tests using SQLite. They cover rounding, large amounts, invalid inputs, current-user and creator permissions, inclusive filters, persistence after reopening, share replacement/deletion, and transaction rollback. Run `./gradlew assembleDebug` to build the app.
+
+### Project 2.4: Kyuhong's tests 16-20
+
+Kyuhong Lee's contribution covers settlements and expense splitting (R9-R11, R16): five Espresso black-box tests and five JUnit/Robolectric white-box tests. The numbered cases, rationale, results, coverage, and team-report handoff are in [the testing contribution](docs/testing/kyuhong-tests-16-20.md). The formatted report is [available as a PDF](output/pdf/splitsmart-kyuhong-tests-16-20.pdf).
+
+Use Gradle JDK 21. Run only the five white-box cases and generate their JaCoCo coverage:
+
+```bash
+./gradlew :app:testDebugUnitTest --tests '*SettlementsAndSplittingWhiteBoxTest' :app:createDebugUnitTestCoverageReport
+```
+
+Start a disposable emulator, then run only the five black-box cases:
+
+```bash
+./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest
+```
+
+The UI tests reset the app's local database and session before each case. Local test results are in `app/build/reports/tests/testDebugUnitTest/index.html`, UI results in `app/build/reports/androidTests/connected/debug/index.html`, and coverage in `app/build/reports/coverage/test/debug/index.html`. The initial baseline identified six group-owner fixture failures, which the team subsequently fixed on main. After integrating the latest main, the complete local suite passed all 73 tests; the app and instrumented-test APKs also built successfully. The five assigned Espresso cases were run separately on an emulator.

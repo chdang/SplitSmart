@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest" tests="5" failures="2" errors="0" skipped="0" time="322.783" timestamp="2026-11-19T01:13:23" hostname="localhost">
+  <properties>
+    <property name="device" value="Pixel_4(AVD) - 17" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="test19PartialAndFinalSettlementsAreSavedAndReduceDebt" classname="edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest" time="62.023" />
+  <testcase name="test20InvalidOrExcessSettlementsDoNotChangeDebt" classname="edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest" time="58.53" />
+  <testcase name="test16EqualSplitConservesPenniesAfterReopening" classname="edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest" time="40.075" />
+  <testcase name="test18ExactAmountsMustMatchTheTotal" classname="edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest" time="71.857">
+    <failure>androidx.test.espresso.base.AssertionErrorHandler$AssertionFailedWithCauseError: '(an instance of android.view.View and an instance of android.widget.Checkable) and view.isChecked() matching: is &lt;true&gt;' doesn't match the selected view.
+Expected: (an instance of android.view.View and an instance of android.widget.Checkable) and view.isChecked() matching: is &lt;true&gt;
+Got: view.isChecked() was &lt;false&gt;
+View Details: MaterialButton{id=2131231192, res-name=split_exact, visibility=VISIBLE, width=333, height=132, has-focus=false, has-focusable=true, has-window-focus=true, is-clickable=true, is-enabled=true, is-focused=false, is-focusable=true, is-layout-requested=false, is-selected=false, layout-params=android.widget.LinearLayout$LayoutParams&#64;YYYYYY, tag=null, root-is-layout-requested=false, has-input-connection=false, x=659.0, y=0.0, text=By amount, input-type=0, ime-target=false, has-links=false, is-checked=false}
+
+at dalvik.system.VMStack.getThreadStackTrace(Native Method)
+at java.lang.Thread.getStackTrace(Thread.java:2849)
+at androidx.test.espresso.base.AssertionErrorHandler.handleSafely(AssertionErrorHandler.java:35)
+at androidx.test.espresso.base.AssertionErrorHandler.handleSafely(AssertionErrorHandler.java:26)
+at androidx.test.espresso.base.DefaultFailureHandler$TypedFailureHandler.handle(DefaultFailureHandler.java:158)
+at androidx.test.espresso.base.DefaultFailureHandler.handle(DefaultFailureHandler.java:120)
+at androidx.test.espresso.ViewInteraction.waitForAndHandleInteractionResults(ViewInteraction.java:387)
+at androidx.test.espresso.ViewInteraction.check(ViewInteraction.java:366)
+at edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest.test18ExactAmountsMustMatchTheTotal(SettlementsAndSplittingBlackBoxTest.java:141)
+... 36 trimmed
+Caused by: junit.framework.AssertionFailedError: '(an instance of android.view.View and an instance of android.widget.Checkable) and view.isChecked() matching: is &lt;true&gt;' doesn't match the selected view.
+Expected: (an instance of android.view.View and an instance of android.widget.Checkable) and view.isChecked() matching: is &lt;true&gt;
+Got: view.isChecked() was &lt;false&gt;
+View Details: MaterialButton{id=2131231192, res-name=split_exact, visibility=VISIBLE, width=333, height=132, has-focus=false, has-focusable=true, has-window-focus=true, is-clickable=true, is-enabled=true, is-focused=false, is-focusable=true, is-layout-requested=false, is-selected=false, layout-params=android.widget.LinearLayout$LayoutParams&#64;YYYYYY, tag=null, root-is-layout-requested=false, has-input-connection=false, x=659.0, y=0.0, text=By amount, input-type=0, ime-target=false, has-links=false, is-checked=false}
+
+at androidx.test.espresso.matcher.ViewMatchers.assertThat(ViewMatchers.java:620)
+at androidx.test.espresso.assertion.ViewAssertions$MatchesViewAssertion.check(ViewAssertions.java:97)
+at androidx.test.espresso.ViewInteraction$SingleExecutionViewAssertion.check(ViewInteraction.java:488)
+at androidx.test.espresso.ViewInteraction$2.call(ViewInteraction.java:346)
+at androidx.test.espresso.ViewInteraction$2.call(ViewInteraction.java:319)
+at java.util.concurrent.FutureTask.run(FutureTask.java:328)
+at android.os.Handler.handleCallback(Handler.java:1082)
+at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+at android.os.Handler.dispatchMessage(Handler.java:126)
+at android.os.Looper.loopOnce(Looper.java:295)
+at android.os.Looper.loop(Looper.java:398)
+at android.app.ActivityThread.main(ActivityThread.java:9569)
+at java.lang.reflect.Method.invoke(Native Method)
+at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:918)
+</failure>
+  </testcase>
+  <testcase name="test17PercentageRequiresOneHundredAndPreservesRounding" classname="edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest" time="61.334">
+    <failure>androidx.test.espresso.base.AssertionErrorHandler$AssertionFailedWithCauseError: '(an instance of android.view.View and an instance of android.widget.Checkable) and view.isChecked() matching: is &lt;true&gt;' doesn't match the selected view.
+Expected: (an instance of android.view.View and an instance of android.widget.Checkable) and view.isChecked() matching: is &lt;true&gt;
+Got: view.isChecked() was &lt;false&gt;
+View Details: MaterialButton{id=2131231193, res-name=split_percent, visibility=VISIBLE, width=333, height=132, has-focus=false, has-focusable=true, has-window-focus=true, is-clickable=true, is-enabled=true, is-focused=false, is-focusable=true, is-layout-requested=false, is-selected=false, layout-params=android.widget.LinearLayout$LayoutParams&#64;YYYYYY, tag=null, root-is-layout-requested=false, has-input-connection=false, x=329.0, y=0.0, text=By percent, input-type=0, ime-target=false, has-links=false, is-checked=false}
+
+at dalvik.system.VMStack.getThreadStackTrace(Native Method)
+at java.lang.Thread.getStackTrace(Thread.java:2849)
+at androidx.test.espresso.base.AssertionErrorHandler.handleSafely(AssertionErrorHandler.java:35)
+at androidx.test.espresso.base.AssertionErrorHandler.handleSafely(AssertionErrorHandler.java:26)
+at androidx.test.espresso.base.DefaultFailureHandler$TypedFailureHandler.handle(DefaultFailureHandler.java:158)
+at androidx.test.espresso.base.DefaultFailureHandler.handle(DefaultFailureHandler.java:120)
+at androidx.test.espresso.ViewInteraction.waitForAndHandleInteractionResults(ViewInteraction.java:387)
+at androidx.test.espresso.ViewInteraction.check(ViewInteraction.java:366)
+at edu.usc.splitsmart.ui.expense.SettlementsAndSplittingBlackBoxTest.test17PercentageRequiresOneHundredAndPreservesRounding(SettlementsAndSplittingBlackBoxTest.java:119)
+... 36 trimmed
+Caused by: junit.framework.AssertionFailedError: '(an instance of android.view.View and an instance of android.widget.Checkable) and view.isChecked() matching: is &lt;true&gt;' doesn't match the selected view.
+Expected: (an instance of android.view.View and an instance of android.widget.Checkable) and view.isChecked() matching: is &lt;true&gt;
+Got: view.isChecked() was &lt;false&gt;
+View Details: MaterialButton{id=2131231193, res-name=split_percent, visibility=VISIBLE, width=333, height=132, has-focus=false, has-focusable=true, has-window-focus=true, is-clickable=true, is-enabled=true, is-focused=false, is-focusable=true, is-layout-requested=false, is-selected=false, layout-params=android.widget.LinearLayout$LayoutParams&#64;YYYYYY, tag=null, root-is-layout-requested=false, has-input-connection=false, x=329.0, y=0.0, text=By percent, input-type=0, ime-target=false, has-links=false, is-checked=false}
+
+at androidx.test.espresso.matcher.ViewMatchers.assertThat(ViewMatchers.java:620)
+at androidx.test.espresso.assertion.ViewAssertions$MatchesViewAssertion.check(ViewAssertions.java:97)
+at androidx.test.espresso.ViewInteraction$SingleExecutionViewAssertion.check(ViewInteraction.java:488)
+at androidx.test.espresso.ViewInteraction$2.call(ViewInteraction.java:346)
+at androidx.test.espresso.ViewInteraction$2.call(ViewInteraction.java:319)
+at java.util.concurrent.FutureTask.run(FutureTask.java:328)
+at android.os.Handler.handleCallback(Handler.java:1082)
+at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+at android.os.Handler.dispatchMessage(Handler.java:126)
+at android.os.Looper.loopOnce(Looper.java:295)
+at android.os.Looper.loop(Looper.java:398)
+at android.app.ActivityThread.main(ActivityThread.java:9569)
+at java.lang.reflect.Method.invoke(Native Method)
+at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:918)
+</failure>
+  </testcase>
+</testsuite>
