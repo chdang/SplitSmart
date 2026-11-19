@@ -1,6 +1,5 @@
 package edu.usc.splitsmart.ui.expense;
 
-import android.app.DatePickerDialog;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -60,11 +59,12 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
 
     private TextInputLayout descriptionLayout;
     private TextInputEditText descriptionInput;
+    private TextInputLayout noteLayout;
+    private TextInputEditText noteInput;
     private TextInputLayout amountLayout;
     private TextInputEditText amountInput;
     private TextInputLayout payerLayout;
     private AutoCompleteTextView payerInput;
-    private TextInputLayout dateLayout;
     private TextInputEditText dateInput;
     private TextInputLayout categoryLayout;
     private AutoCompleteTextView categoryInput;
@@ -77,7 +77,7 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     protected Button deleteButton;
 
     private User payer;
-    private Category category = Category.FOOD;
+    private Category category = Category.OTHER;
     private LocalDate expenseDate = LocalDate.now();
     private SplitType splitType = SplitType.EQUAL;
     private boolean editable = true;
@@ -108,11 +108,12 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
         readOnlyBanner = findViewById(R.id.read_only_banner);
         descriptionLayout = findViewById(R.id.description_layout);
         descriptionInput = findViewById(R.id.description_input);
+        noteLayout = findViewById(R.id.note_layout);
+        noteInput = findViewById(R.id.note_input);
         amountLayout = findViewById(R.id.amount_layout);
         amountInput = findViewById(R.id.amount_input);
         payerLayout = findViewById(R.id.payer_layout);
         payerInput = findViewById(R.id.payer_input);
-        dateLayout = findViewById(R.id.date_layout);
         dateInput = findViewById(R.id.date_input);
         categoryLayout = findViewById(R.id.category_layout);
         categoryInput = findViewById(R.id.category_input);
@@ -132,9 +133,9 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
         }
 
         setUpCategoryPicker();
-        setUpDatePicker();
+        setExpenseDate(expenseDate);
         payerInput.setOnItemClickListener((parent, view, position, id) -> {
-            payer = members.get(position);
+            selectPayer(members.get(position));
             payerLayout.setError(null);
         });
         splitTypeGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
@@ -172,6 +173,21 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     protected void selectPayer(User user) {
         payer = user;
         payerInput.setText(Labels.nameMarkingYou(this, user, currentUser.getId()), false);
+        lockPayerRow();
+    }
+
+    /**
+     * The payer always owes a share of what they paid for, so their row is checked and locked
+     * (R9). Any previously locked row is released.
+     */
+    private void lockPayerRow() {
+        for (ParticipantRow row : rows) {
+            boolean isPayer = payer != null && row.user.getId().equals(payer.getId());
+            if (isPayer) {
+                row.setChecked(true);
+            }
+            row.setLocked(isPayer);
+        }
     }
 
     protected void checkEveryone() {
@@ -184,6 +200,7 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     /** Fills every field from an existing expense. */
     protected void fill(Expense expense) {
         descriptionInput.setText(expense.getDescription());
+        noteInput.setText(expense.getNote());
         amountInput.setText(Money.toInput(expense.getTotalCents()));
         setCategory(expense.getCategory());
         setExpenseDate(expense.getExpenseDate());
@@ -207,6 +224,8 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
                 row.setValueText(Money.percentToInput(percents.get(id)));
             }
         }
+        // After the loop: the stored shares may predate the payer always being a participant.
+        lockPayerRow();
         updateSplitStatus();
     }
 
@@ -214,9 +233,9 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     protected void setEditable(boolean canEdit) {
         editable = canEdit;
         descriptionLayout.setEnabled(canEdit);
+        noteLayout.setEnabled(canEdit);
         amountLayout.setEnabled(canEdit);
         payerLayout.setEnabled(canEdit);
-        dateLayout.setEnabled(canEdit);
         categoryLayout.setEnabled(canEdit);
         for (int i = 0; i < splitTypeGroup.getChildCount(); i++) {
             splitTypeGroup.getChildAt(i).setEnabled(canEdit);
@@ -260,22 +279,6 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     private void setCategory(Category newCategory) {
         category = newCategory;
         categoryInput.setText(Labels.category(this, newCategory), false);
-    }
-
-    private void setUpDatePicker() {
-        setExpenseDate(expenseDate);
-        dateInput.setOnClickListener(v -> {
-            if (!editable) {
-                return;
-            }
-            DatePickerDialog dialog = new DatePickerDialog(this,
-                    (picker, year, monthIndex, day) ->
-                            setExpenseDate(LocalDate.of(year, monthIndex + 1, day)),
-                    expenseDate.getYear(), expenseDate.getMonthValue() - 1,
-                    expenseDate.getDayOfMonth());
-            dialog.getDatePicker().setMaxDate(System.currentTimeMillis());
-            dialog.show();
-        });
     }
 
     private void setExpenseDate(LocalDate date) {
@@ -358,7 +361,7 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
         }
         Long total = Money.parseCents(amountInput.getText());
         List<ParticipantRow> checked = checkedRows();
-        if (checked.isEmpty()) {
+        if (checked.size() < 2) {
             showStatus(getString(R.string.split_status_pick_people), Status.PROBLEM);
             return;
         }
@@ -544,7 +547,7 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
             sum += value;
         }
 
-        if (checked.isEmpty()) {
+        if (checked.size() < 2) {
             showMessage(getString(R.string.split_status_pick_people));
             return null;
         }
@@ -559,8 +562,8 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
             showMessage(getString(R.string.error_split_exact_total, Money.format(total)));
             return null;
         }
-        return new ExpenseDraft(groupId, payer.getId(), description, total, category, splitType,
-                expenseDate, allocations);
+        return new ExpenseDraft(groupId, payer.getId(), description, textOf(noteInput), total,
+                category, splitType, expenseDate, allocations);
     }
 
     // ---------------------------------------------------------------------------------------
@@ -592,7 +595,7 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     }
 
     private void restoreForm(Bundle form) {
-        setCategory(Category.valueOf(form.getString("category", Category.FOOD.name())));
+        setCategory(Category.valueOf(form.getString("category", Category.OTHER.name())));
         setExpenseDate(LocalDate.parse(form.getString("date", LocalDate.now().toString())));
         String payerId = form.getString("payer");
         for (User member : members) {
@@ -610,6 +613,7 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
                 row.setValueText(values.get(index));
             }
         }
+        lockPayerRow();
         updateSplitStatus();
     }
 }

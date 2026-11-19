@@ -23,10 +23,17 @@ public class SplitSmartException extends Exception {
         NOT_OWNER,
         /** Only the expense creator can do this (R7). */
         NOT_CREATOR,
+        /** Only the member who recorded the settlement can do this (R16). */
+        NOT_RECORDER,
         /** Some member emails don't have accounts. {@link #getDetails()} lists them. */
         MISSING_ACCOUNTS,
         /** The amount is zero, negative, or not a valid amount of money. */
         INVALID_AMOUNT,
+        /**
+         * A settlement is for more than the payer currently owes the receiver (R16).
+         * {@link #getDetails()} holds the owed cents as a string.
+         */
+        AMOUNT_ABOVE_DEBT,
         /** The shares don't add up to the total, or the participants aren't valid. */
         INVALID_SPLIT,
         /** The group, expense, or user doesn't exist. */

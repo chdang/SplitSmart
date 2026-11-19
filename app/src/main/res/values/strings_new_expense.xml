@@ -2,8 +2,9 @@
 <resources>
     <string name="add_expense">Add expense</string>
     <string name="expense_description">What was it for?</string>
+    <string name="expense_note">Note (optional)</string>
     <string name="expense_paid_by">Paid by</string>
-    <string name="expense_date">Date</string>
+    <string name="expense_date">Date added</string>
     <string name="expense_category">Category</string>
     <string name="expense_split_how">How to split it</string>
     <string name="split_equal">Equally</string>
@@ -15,7 +16,7 @@
     <string name="participant_value_hint">Share</string>
 
     <!-- The line under the participants that shows whether the split adds up. -->
-    <string name="split_status_pick_people">Pick at least one person to split with</string>
+    <string name="split_status_pick_people">Pick at least two people to split with</string>
     <plurals name="split_status_equal">
         <item quantity="one">Charged to %d person</item>
         <item quantity="other">Split equally between %d people</item>

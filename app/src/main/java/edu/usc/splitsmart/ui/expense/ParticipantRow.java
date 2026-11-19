@@ -33,6 +33,7 @@ final class ParticipantRow {
     private final TextInputEditText valueInput;
     private SplitType splitType = SplitType.EQUAL;
     private boolean editable = true;
+    private boolean locked;
 
     ParticipantRow(LayoutInflater inflater, ViewGroup parent, User user, String label,
                    Runnable onChange) {
@@ -109,9 +110,15 @@ final class ParticipantRow {
         valueLayout.setError(message);
     }
 
+    /** Keeps the row checked and stops it being unchecked, used for the payer's own row. */
+    void setLocked(boolean locked) {
+        this.locked = locked;
+        check.setEnabled(editable && !locked);
+    }
+
     void setEditable(boolean editable) {
         this.editable = editable;
-        check.setEnabled(editable);
+        check.setEnabled(editable && !locked);
         valueLayout.setEnabled(editable && check.isChecked());
     }
 }

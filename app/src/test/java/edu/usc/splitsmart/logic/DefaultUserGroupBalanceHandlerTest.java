@@ -145,7 +145,7 @@ public class DefaultUserGroupBalanceHandlerTest {
     public void historyIsNewestFirst() {
         Expense older = expenseAt(Instant.ofEpochMilli(1000));
         Expense newer = expenseAt(Instant.ofEpochMilli(3000));
-        Settlement middle = new Settlement("s", "g", BEN, BEN, ANA, 100,
+        Settlement middle = new Settlement("s", "g", BEN, BEN, ANA, 100, "",
                 Instant.ofEpochMilli(2000));
 
         List<ActivityItem> items =
@@ -160,7 +160,7 @@ public class DefaultUserGroupBalanceHandlerTest {
     public void historyLabelsEachItemByType() {
         Expense older = expenseAt(Instant.ofEpochMilli(1000));
         Expense newer = expenseAt(Instant.ofEpochMilli(3000));
-        Settlement middle = new Settlement("s", "g", BEN, BEN, ANA, 100,
+        Settlement middle = new Settlement("s", "g", BEN, BEN, ANA, 100, "",
                 Instant.ofEpochMilli(2000));
 
         List<ActivityItem> items =
@@ -181,13 +181,13 @@ public class DefaultUserGroupBalanceHandlerTest {
 
     private Expense expense(String payerId, long totalCents, SplitType type,
                             ExpenseShare... shares) {
-        return new Expense("e" + nextId++, "g", payerId, payerId, "test", totalCents,
+        return new Expense("e" + nextId++, "g", payerId, payerId, "test", "", totalCents,
                 Category.FOOD, type, LocalDate.of(2026, 1, 1), Instant.EPOCH,
                 Arrays.asList(shares));
     }
 
     private Expense expenseAt(Instant createdAt) {
-        return new Expense("e" + nextId++, "g", ANA, ANA, "test", 100, Category.FOOD,
+        return new Expense("e" + nextId++, "g", ANA, ANA, "test", "", 100, Category.FOOD,
                 SplitType.EQUAL, LocalDate.of(2026, 1, 1), createdAt,
                 Collections.singletonList(share(ANA, 100)));
     }
@@ -197,7 +197,7 @@ public class DefaultUserGroupBalanceHandlerTest {
     }
 
     private Settlement settlement(String payerId, String receiverId, long cents) {
-        return new Settlement("s" + nextId++, "g", payerId, payerId, receiverId, cents,
+        return new Settlement("s" + nextId++, "g", payerId, payerId, receiverId, cents, "",
                 Instant.EPOCH);
     }
 

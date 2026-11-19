@@ -27,12 +27,19 @@ import edu.usc.splitsmart.ui.common.Money;
 /** Rows for the group history: expenses and payments, newest first. */
 final class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Holder> {
 
+    /** Tapping a row opens its full details, which is where editing and deleting live (R15). */
+    interface OnItemClick {
+        void open(ActivityItem item);
+    }
+
     private final List<ActivityItem> items = new ArrayList<>();
     private final Map<String, User> members = new HashMap<>();
     private final String currentUserId;
+    private final OnItemClick onClick;
 
-    HistoryAdapter(String currentUserId) {
+    HistoryAdapter(String currentUserId, OnItemClick onClick) {
         this.currentUserId = currentUserId;
+        this.onClick = onClick;
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -79,6 +86,7 @@ final class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Holder> {
             holder.subtitle.setText(date);
             holder.amount.setText(Money.format(settlement.getAmountCents()));
         }
+        holder.itemView.setOnClickListener(v -> onClick.open(item));
     }
 
     @Override

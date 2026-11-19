@@ -64,7 +64,7 @@ public class DefaultGroupHandlerMonthlyStatsMembershipTest {
         sessions.clear();
         handler = new DefaultGroupHandler(users, groups,
                 new DefaultSessionHandler(users, sessions));
-        groups.saveExpense(new Expense("e-groceries", GROUP, TOMMY, TOMMY, "Groceries", 4250,
+        groups.saveExpense(new Expense("e-groceries", GROUP, TOMMY, TOMMY, "Groceries", "", 4250,
                 Category.FOOD, SplitType.EQUAL, LocalDate.of(2026, 3, 12), Instant.EPOCH,
                 Collections.singletonList(new ExpenseShare("e-groceries", TOMMY, 4250))));
     }

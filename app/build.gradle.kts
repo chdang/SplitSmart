@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    jacoco
 }
 
 android {
@@ -16,6 +17,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Adds createDebugUnitTestCoverageReport (JaCoCo) for the Project 2.4 coverage numbers.
+            enableUnitTestCoverage = true
+        }
         release {
             isMinifyEnabled = false
         }
@@ -28,6 +33,8 @@ android {
 
     testOptions {
         unitTests.isIncludeAndroidResources = true
+        // Espresso is more reliable with system animations off on the test device.
+        animationsDisabled = true
     }
 }
 
@@ -44,4 +51,16 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+}
+
+// Robolectric loads app classes through its own class loader, which JaCoCo skips unless told
+// otherwise; without this the Robolectric tests would report 0% coverage.
+tasks.withType<Test> {
+    configure<JacocoTaskExtension> {
+        isIncludeNoLocationClasses = true
+        excludes = listOf("jdk.internal.*")
+    }
 }

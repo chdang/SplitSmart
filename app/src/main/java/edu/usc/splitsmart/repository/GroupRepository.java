@@ -55,7 +55,19 @@ public interface GroupRepository {
     boolean isOwner(String groupId, String userId);
 
     /** Records a payment one member made to another outside the app (R16). */
-    Settlement saveSettlement(String groupId, String recorderId, String payerId, String receiverId, long amountCents, Instant settledAt);
+    Settlement saveSettlement(String groupId, String recorderId, String payerId, String receiverId, long amountCents, String note, Instant settledAt);
+
+    /**
+     * Changes who paid whom, how much, and the note. The group, recorder, and recorded time
+     * stay as first saved, the same way an expense edit keeps its creator and creation time.
+     */
+    Settlement updateSettlement(String settlementId, String payerId, String receiverId, long amountCents, String note);
+
+    /** Removes the settlement, which hands back whatever it was offsetting (R16). */
+    void deleteSettlement(String settlementId);
+
+    @Nullable
+    Settlement findSettlementById(String settlementId);
 
     /** Every settlement in the group. Role 5 nets these against the expenses. */
     List<Settlement> findSettlementsByGroup(String groupId);

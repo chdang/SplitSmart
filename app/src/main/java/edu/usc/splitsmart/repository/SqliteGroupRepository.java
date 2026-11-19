@@ -178,7 +178,7 @@ public final class SqliteGroupRepository implements GroupRepository {
     }
 
     @Override
-    public Settlement saveSettlement(String groupId, String recorderId, String payerId, String receiverId, long amountCents, Instant settledAt) {
+    public Settlement saveSettlement(String groupId, String recorderId, String payerId, String receiverId, long amountCents, String note, Instant settledAt) {
         String id = UUID.randomUUID().toString();
         ContentValues values = new ContentValues();
         values.put("id", id);
@@ -187,10 +187,52 @@ public final class SqliteGroupRepository implements GroupRepository {
         values.put("payer_id", payerId);
         values.put("receiver_id", receiverId);
         values.put("amount_cents", amountCents);
+        values.put("note", note == null ? "" : note);
         values.put("settled_at", settledAt.toEpochMilli());
         database.getWritableDatabase().insertOrThrow(SplitSmartDatabase.SETTLEMENTS, null, values);
 
-        return new Settlement(id, groupId, recorderId, payerId, receiverId, amountCents, settledAt);
+        return new Settlement(id, groupId, recorderId, payerId, receiverId, amountCents, note,
+                settledAt);
+    }
+
+    @Override
+    public Settlement updateSettlement(String settlementId, String payerId, String receiverId,
+                                       long amountCents, String note) {
+        ContentValues values = new ContentValues();
+        values.put("payer_id", payerId);
+        values.put("receiver_id", receiverId);
+        values.put("amount_cents", amountCents);
+        values.put("note", note == null ? "" : note);
+        // The group, recorder, and settled_at stay as first recorded, mirroring expense edits.
+        int changed = database.getWritableDatabase().update(SplitSmartDatabase.SETTLEMENTS, values,
+                "id = ?", new String[]{ settlementId });
+        if (changed != 1) {
+            throw new IllegalStateException("Cannot update a missing settlement");
+        }
+        Settlement updated = findSettlementById(settlementId);
+        if (updated == null) {
+            throw new IllegalStateException("Settlement vanished after update");
+        }
+        return updated;
+    }
+
+    @Override
+    public void deleteSettlement(String settlementId) {
+        database.getWritableDatabase().delete(SplitSmartDatabase.SETTLEMENTS, "id = ?",
+                new String[]{ settlementId });
+    }
+
+    @Nullable
+    @Override
+    public Settlement findSettlementById(String settlementId) {
+        try (Cursor c = database.getReadableDatabase().query(
+                SplitSmartDatabase.SETTLEMENTS,
+                null,
+                "id = ?",
+                new String[]{ settlementId },
+                null, null, null)) {
+            return c.moveToFirst() ? readSettlement(c) : null;
+        }
     }
 
     @Override
@@ -233,10 +275,12 @@ public final class SqliteGroupRepository implements GroupRepository {
         String payerId = c.getString(c.getColumnIndexOrThrow("payer_id"));
         String receiverId = c.getString(c.getColumnIndexOrThrow("receiver_id"));
         long amountCents = c.getLong(c.getColumnIndexOrThrow("amount_cents"));
+        String note = c.getString(c.getColumnIndexOrThrow("note"));
         Instant settledAt = Instant.ofEpochMilli(
                 c.getLong(c.getColumnIndexOrThrow("settled_at")));
 
-        return new Settlement(id, groupId, recorderId, payerId, receiverId, amountCents, settledAt);
+        return new Settlement(id, groupId, recorderId, payerId, receiverId, amountCents, note,
+                settledAt);
     }
 
     // -------------------------------------------------------------------------------------
@@ -312,6 +356,7 @@ public final class SqliteGroupRepository implements GroupRepository {
         values.put("creator_id", expense.getCreatorId());
         values.put("payer_id", expense.getPayerId());
         values.put("description", expense.getDescription());
+        values.put("note", expense.getNote());
         values.put("total_cents", expense.getTotalCents());
         values.put("category", expense.getCategory().name());
         values.put("split_type", expense.getSplitType().name());
@@ -353,6 +398,7 @@ public final class SqliteGroupRepository implements GroupRepository {
                 c.getString(c.getColumnIndexOrThrow("creator_id")),
                 c.getString(c.getColumnIndexOrThrow("payer_id")),
                 c.getString(c.getColumnIndexOrThrow("description")),
+                c.getString(c.getColumnIndexOrThrow("note")),
                 c.getLong(c.getColumnIndexOrThrow("total_cents")),
                 Category.valueOf(c.getString(c.getColumnIndexOrThrow("category"))),
                 SplitType.valueOf(c.getString(c.getColumnIndexOrThrow("split_type"))),

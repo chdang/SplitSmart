@@ -16,6 +16,7 @@ public final class ExpenseDraft {
     private final String groupId;
     private final String payerId;
     private final String description;
+    private final String note;
     private final long totalCents;
     private final Category category;
     private final SplitType splitType;
@@ -31,12 +32,13 @@ public final class ExpenseDraft {
      *       <li>EXACT_AMOUNT: cents. The values must total {@code totalCents}.
      *     </ul>
      */
-    public ExpenseDraft(String groupId, String payerId, String description, long totalCents,
-                        Category category, SplitType splitType, LocalDate expenseDate,
-                        Map<String, Long> allocations) {
+    public ExpenseDraft(String groupId, String payerId, String description, String note,
+                        long totalCents, Category category, SplitType splitType,
+                        LocalDate expenseDate, Map<String, Long> allocations) {
         this.groupId = groupId;
         this.payerId = payerId;
         this.description = description;
+        this.note = note;
         this.totalCents = totalCents;
         this.category = category;
         this.splitType = splitType;
@@ -54,6 +56,11 @@ public final class ExpenseDraft {
 
     public String getDescription() {
         return description;
+    }
+
+    /** Optional free text; may be null or blank, which the handler stores as "". */
+    public String getNote() {
+        return note;
     }
 
     public long getTotalCents() {

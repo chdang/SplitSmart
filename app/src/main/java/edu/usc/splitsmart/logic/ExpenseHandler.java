@@ -77,10 +77,27 @@ public interface ExpenseHandler {
     void authenticateCreator(String expenseId, String userId, Callback<Boolean> callback);
 
     /**
-     * Records that {@code payerId} paid {@code receiverId} outside the app. Fails with
-     * INVALID_AMOUNT if the amount isn't positive, NOT_A_MEMBER if either person isn't in the
-     * group, or INVALID_INPUT if they're the same person (R16).
+     * Records that {@code payerId} paid {@code receiverId} outside the app, with an optional
+     * note. Fails with INVALID_AMOUNT if the amount isn't positive, NOT_A_MEMBER if either
+     * person isn't in the group, or INVALID_INPUT if they're the same person (R16).
      */
     void recordSettlement(String groupId, String payerId, String receiverId, long amountCents,
-                          Callback<Settlement> callback);
+                          String note, Callback<Settlement> callback);
+
+    /** Fails with NOT_FOUND if absent. The real handler requires a logged-in group member. */
+    void getSettlement(String settlementId, Callback<Settlement> callback);
+
+    /**
+     * Changes who paid whom, how much, and the note. Fails with NOT_RECORDER if {@code actorId}
+     * isn't the logged-in member who recorded it, or with the same errors as recordSettlement.
+     * The group, recorder, ID, and recorded time cannot change (R16).
+     */
+    void updateSettlement(String settlementId, String actorId, String payerId, String receiverId,
+                          long amountCents, String note, Callback<Settlement> callback);
+
+    /** Deletes the settlement, releasing what it offset. Requires the logged-in recorder (R16). */
+    void deleteSettlement(String settlementId, String actorId, Callback<Void> callback);
+
+    /** True if the user recorded the settlement, false if absent. Requires membership when real. */
+    void authenticateRecorder(String settlementId, String userId, Callback<Boolean> callback);
 }

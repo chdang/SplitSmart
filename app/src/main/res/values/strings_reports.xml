@@ -9,6 +9,16 @@
     <string name="history_former_member">A former member</string>
     <string name="history_expense_meta">Paid by %1$s · %2$s</string>
     <string name="history_empty">Nothing has happened in this group yet.</string>
+    <string name="history_search">Search by description, note, category, or member</string>
+    <string name="history_kind_all">All</string>
+    <string name="history_kind_expenses">Expenses</string>
+    <string name="history_kind_payments">Payments</string>
+    <string name="history_sort">Sort by</string>
+    <string name="history_sort_newest">Newest first</string>
+    <string name="history_sort_oldest">Oldest first</string>
+    <string name="history_sort_largest">Largest amount</string>
+    <string name="history_sort_smallest">Smallest amount</string>
+    <string name="history_no_matches">No expenses or payments match your search.</string>
 
     <string name="summary_title">Monthly summary</string>
     <string name="summary_previous_month">Previous month</string>

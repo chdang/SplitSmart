@@ -17,7 +17,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public final class SplitSmartDatabase extends SQLiteOpenHelper {
 
     private static final String NAME = "splitsmart.db";
-    private static final int VERSION = 2;
+    private static final int VERSION = 3;
 
     /** "groups" is a SQLite keyword, so the table is named split_groups. */
     public static final String GROUPS = "split_groups";
@@ -66,6 +66,7 @@ public final class SplitSmartDatabase extends SQLiteOpenHelper {
                 + "creator_id TEXT NOT NULL REFERENCES " + USERS + "(id), "
                 + "payer_id TEXT NOT NULL REFERENCES " + USERS + "(id), "
                 + "description TEXT NOT NULL, "
+                + "note TEXT NOT NULL DEFAULT '', "
                 + "total_cents INTEGER NOT NULL, "
                 + "category TEXT NOT NULL, "
                 + "split_type TEXT NOT NULL, "
@@ -91,6 +92,7 @@ public final class SplitSmartDatabase extends SQLiteOpenHelper {
                 + "payer_id TEXT NOT NULL REFERENCES " + USERS + "(id), "
                 + "receiver_id TEXT NOT NULL REFERENCES " + USERS + "(id), "
                 + "amount_cents INTEGER NOT NULL, "
+                + "note TEXT NOT NULL DEFAULT '', "
                 + "settled_at INTEGER NOT NULL)");
 
         db.execSQL("CREATE INDEX idx_members_user ON " + GROUP_MEMBERS + "(user_id)");
@@ -106,6 +108,14 @@ public final class SplitSmartDatabase extends SQLiteOpenHelper {
         if (oldVersion < 2) {
             // Keep accounts, groups, and expenses. Legacy shares have no original percentage.
             db.execSQL("ALTER TABLE " + EXPENSE_SHARES + " ADD COLUMN basis_points INTEGER");
+        }
+        if (oldVersion < 3) {
+            // Optional notes on expenses and settlements (R6, R16). Rows that predate the
+            // column read back as "" rather than null, which keeps note search simple.
+            db.execSQL("ALTER TABLE " + EXPENSES
+                    + " ADD COLUMN note TEXT NOT NULL DEFAULT ''");
+            db.execSQL("ALTER TABLE " + SETTLEMENTS
+                    + " ADD COLUMN note TEXT NOT NULL DEFAULT ''");
         }
     }
 }

@@ -1,5 +1,7 @@
 package edu.usc.splitsmart.fake;
 
+import androidx.annotation.Nullable;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,24 +101,100 @@ public final class FakeExpenseHandler implements ExpenseHandler {
 
     @Override
     public void recordSettlement(String groupId, String payerId, String receiverId,
-                                 long amountCents, Callback<Settlement> callback) {
-        if (amountCents <= 0) {
-            store.fail(callback, SplitSmartException.Code.INVALID_AMOUNT);
-            return;
-        }
-        if (payerId.equals(receiverId)) {
-            store.fail(callback, SplitSmartException.Code.INVALID_INPUT);
-            return;
-        }
-        if (!store.isMember(groupId, payerId) || !store.isMember(groupId, receiverId)) {
-            store.fail(callback, SplitSmartException.Code.NOT_A_MEMBER);
+                                 long amountCents, String note, Callback<Settlement> callback) {
+        SplitSmartException invalid = checkSettlement(groupId, payerId, receiverId, amountCents);
+        if (invalid != null) {
+            store.fail(callback, invalid.getCode());
             return;
         }
         String recorderId = store.currentUserId != null ? store.currentUserId : payerId;
         Settlement settlement = new Settlement(FakeStore.newId(), groupId, recorderId, payerId,
-                receiverId, amountCents, Instant.now());
+                receiverId, amountCents, note, Instant.now());
         store.settlements.add(settlement);
         store.succeed(callback, settlement);
+    }
+
+    @Override
+    public void getSettlement(String settlementId, Callback<Settlement> callback) {
+        Settlement settlement = findSettlement(settlementId);
+        if (settlement == null) {
+            store.fail(callback, SplitSmartException.Code.NOT_FOUND);
+            return;
+        }
+        store.succeed(callback, settlement);
+    }
+
+    @Override
+    public void updateSettlement(String settlementId, String actorId, String payerId,
+                                 String receiverId, long amountCents, String note,
+                                 Callback<Settlement> callback) {
+        Settlement existing = findSettlement(settlementId);
+        if (existing == null) {
+            store.fail(callback, SplitSmartException.Code.NOT_FOUND);
+            return;
+        }
+        if (!existing.getRecorderId().equals(actorId)) {
+            store.fail(callback, SplitSmartException.Code.NOT_RECORDER);
+            return;
+        }
+        SplitSmartException invalid = checkSettlement(existing.getGroupId(), payerId, receiverId,
+                amountCents);
+        if (invalid != null) {
+            store.fail(callback, invalid.getCode());
+            return;
+        }
+        Settlement updated = new Settlement(existing.getId(), existing.getGroupId(),
+                existing.getRecorderId(), payerId, receiverId, amountCents, note,
+                existing.getSettledAt());
+        store.settlements.remove(existing);
+        store.settlements.add(updated);
+        store.succeed(callback, updated);
+    }
+
+    @Override
+    public void deleteSettlement(String settlementId, String actorId, Callback<Void> callback) {
+        Settlement existing = findSettlement(settlementId);
+        if (existing == null) {
+            store.fail(callback, SplitSmartException.Code.NOT_FOUND);
+            return;
+        }
+        if (!existing.getRecorderId().equals(actorId)) {
+            store.fail(callback, SplitSmartException.Code.NOT_RECORDER);
+            return;
+        }
+        store.settlements.remove(existing);
+        store.succeed(callback, null);
+    }
+
+    @Override
+    public void authenticateRecorder(String settlementId, String userId,
+                                     Callback<Boolean> callback) {
+        Settlement settlement = findSettlement(settlementId);
+        store.succeed(callback, settlement != null && settlement.getRecorderId().equals(userId));
+    }
+
+    @Nullable
+    private Settlement findSettlement(String settlementId) {
+        for (Settlement settlement : store.settlements) {
+            if (settlement.getId().equals(settlementId)) {
+                return settlement;
+            }
+        }
+        return null;
+    }
+
+    private SplitSmartException checkSettlement(String groupId, String payerId, String receiverId,
+                                                long amountCents) {
+        if (amountCents <= 0) {
+            return new SplitSmartException(SplitSmartException.Code.INVALID_AMOUNT);
+        }
+        if (payerId.equals(receiverId)) {
+            return new SplitSmartException(SplitSmartException.Code.INVALID_INPUT);
+        }
+        if (!store.isMember(groupId, payerId) || !store.isMember(groupId, receiverId)) {
+            return new SplitSmartException(SplitSmartException.Code.NOT_A_MEMBER);
+        }
+        return null;
     }
 
     private SplitSmartException validate(String actorId, ExpenseDraft draft) {
@@ -149,7 +227,8 @@ public final class FakeExpenseHandler implements ExpenseHandler {
 
     private Expense build(String id, String creatorId, ExpenseDraft draft, Instant createdAt) {
         return new Expense(id, draft.getGroupId(), creatorId, draft.getPayerId(),
-                draft.getDescription().trim(), draft.getTotalCents(), draft.getCategory(),
+                draft.getDescription().trim(), draft.getNote() == null ? "" : draft.getNote().trim(),
+                draft.getTotalCents(), draft.getCategory(),
                 draft.getSplitType(), draft.getExpenseDate(), createdAt,
                 calculateShares(id, draft.getTotalCents(), draft.getSplitType(),
                         draft.getAllocations()));

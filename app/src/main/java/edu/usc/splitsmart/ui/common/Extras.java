@@ -6,6 +6,7 @@ import android.app.Activity;
 public final class Extras {
     public static final String GROUP_ID = "edu.usc.splitsmart.extra.GROUP_ID";
     public static final String EXPENSE_ID = "edu.usc.splitsmart.extra.EXPENSE_ID";
+    public static final String SETTLEMENT_ID = "edu.usc.splitsmart.extra.SETTLEMENT_ID";
     public static final String RECEIVER_ID = "edu.usc.splitsmart.extra.RECEIVER_ID";
     public static final String AMOUNT_CENTS = "edu.usc.splitsmart.extra.AMOUNT_CENTS";
     public static final String EMAIL = "edu.usc.splitsmart.extra.EMAIL";

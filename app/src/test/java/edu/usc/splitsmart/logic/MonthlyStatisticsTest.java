@@ -63,7 +63,7 @@ public class MonthlyStatisticsTest {
 
     private Expense expense(LocalDate date, long totalCents, Category category) {
         String id = "e" + nextId++;
-        return new Expense(id, "g", "u-ana", "u-ana", "test", totalCents, category,
+        return new Expense(id, "g", "u-ana", "u-ana", "test", "", totalCents, category,
                 SplitType.EQUAL, date, Instant.EPOCH,
                 Collections.singletonList(new ExpenseShare(id, "u-ana", totalCents)));
     }

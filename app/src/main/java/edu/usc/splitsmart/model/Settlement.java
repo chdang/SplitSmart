@@ -10,16 +10,18 @@ public final class Settlement {
     private final String payerId;
     private final String receiverId;
     private final long amountCents;
+    private final String note;
     private final Instant settledAt;
 
     public Settlement(String id, String groupId, String recorderId, String payerId,
-                      String receiverId, long amountCents, Instant settledAt) {
+                      String receiverId, long amountCents, String note, Instant settledAt) {
         this.id = id;
         this.groupId = groupId;
         this.recorderId = recorderId;
         this.payerId = payerId;
         this.receiverId = receiverId;
         this.amountCents = amountCents;
+        this.note = note == null ? "" : note;
         this.settledAt = settledAt;
     }
 
@@ -45,6 +47,11 @@ public final class Settlement {
 
     public long getAmountCents() {
         return amountCents;
+    }
+
+    /** The recorder's optional free-text note, or "" when they didn't write one. */
+    public String getNote() {
+        return note;
     }
 
     public Instant getSettledAt() {
