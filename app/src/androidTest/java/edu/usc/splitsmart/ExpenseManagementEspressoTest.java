@@ -365,7 +365,7 @@ public class ExpenseManagementEspressoTest {
         Map<String, Long> allocations = new LinkedHashMap<>();
         allocations.put(tommyId, 0L);
         allocations.put(alexId, 0L);
-        ExpenseDraft draft = new ExpenseDraft(groupId, userId, description, 1000L, Category.FOOD,
+        ExpenseDraft draft = new ExpenseDraft(groupId, userId, description, description, 1000L, Category.FOOD,
                 SplitType.EQUAL, LocalDate.now(), allocations);
         Expense expense = call(cb -> AppServices.expenses().createExpense(userId, draft, cb));
         loginAs(TOMMY_EMAIL, TOMMY_PASSWORD);
