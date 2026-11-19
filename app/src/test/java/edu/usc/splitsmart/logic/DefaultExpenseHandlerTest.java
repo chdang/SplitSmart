@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -98,7 +99,7 @@ public class DefaultExpenseHandlerTest {
         assertFailed(auth, SplitSmartException.Code.NOT_LOGGED_IN);
 
         Result<Settlement> settle = new Result<>();
-        handler.recordSettlement(GROUP, ME, OTHER, 100,"", settle);
+        handler.recordSettlement(GROUP, ME, OTHER, 100, "", settle);
         assertFailed(settle, SplitSmartException.Code.NOT_LOGGED_IN);
 
         // Nothing should have been written.
@@ -196,23 +197,33 @@ public class DefaultExpenseHandlerTest {
         // recordSettlement: non-positive amount
         for (long bad : new long[]{0L, -1L}) {
             Result<Settlement> r = new Result<>();
-            handler.recordSettlement(GROUP, ME, OTHER, bad,"", r);
+            handler.recordSettlement(GROUP, ME, OTHER, bad, "", r);
             assertFailed(r, SplitSmartException.Code.INVALID_AMOUNT);
         }
 
         // recordSettlement: blank payer / receiver, and payer == receiver
         for (String bad : new String[]{null, "", "   "}) {
             Result<Settlement> payer = new Result<>();
-            handler.recordSettlement(GROUP, bad, OTHER, 100,"", payer);
+            handler.recordSettlement(GROUP, bad, OTHER, 100, "", payer);
             assertFailed(payer, SplitSmartException.Code.INVALID_INPUT);
 
             Result<Settlement> receiver = new Result<>();
-            handler.recordSettlement(GROUP, ME, bad, 100,"", receiver);
+            handler.recordSettlement(GROUP, ME, bad, 100, "", receiver);
             assertFailed(receiver, SplitSmartException.Code.INVALID_INPUT);
         }
         Result<Settlement> same = new Result<>();
-        handler.recordSettlement(GROUP, ME, ME, 100,"", same);
+        handler.recordSettlement(GROUP, ME, ME, 100, "", same);
         assertFailed(same, SplitSmartException.Code.INVALID_INPUT);
+
+        // recordSettlement: more than the payer owes the receiver (AMOUNT_ABOVE_DEBT).
+        // e1 (seeded above) was paid by ME, so OTHER owes ME $5.00 and ME owes OTHER nothing.
+        Result<Settlement> tooMuch = new Result<>();
+        handler.recordSettlement(GROUP, OTHER, ME, 501, "", tooMuch);
+        assertFailed(tooMuch, SplitSmartException.Code.AMOUNT_ABOVE_DEBT);
+
+        Result<Settlement> wrongWay = new Result<>();
+        handler.recordSettlement(GROUP, ME, OTHER, 1, "", wrongWay);
+        assertFailed(wrongWay, SplitSmartException.Code.AMOUNT_ABOVE_DEBT);
         assertEquals(0, repo.settlementCount);
     }
 
@@ -275,16 +286,16 @@ public class DefaultExpenseHandlerTest {
 
         // ---- NOT_A_MEMBER: recordSettlement (current user, payer, receiver) ----
         Result<Settlement> payer = new Result<>();
-        handler.recordSettlement(GROUP, STRANGER, OTHER, 100,"", payer);
+        handler.recordSettlement(GROUP, STRANGER, OTHER, 100, "", payer);
         assertFailed(payer, SplitSmartException.Code.NOT_A_MEMBER);
 
         Result<Settlement> receiver = new Result<>();
-        handler.recordSettlement(GROUP, ME, STRANGER, 100,"", receiver);
+        handler.recordSettlement(GROUP, ME, STRANGER, 100, "", receiver);
         assertFailed(receiver, SplitSmartException.Code.NOT_A_MEMBER);
 
         repo.removeMember(GROUP, ME);
         Result<Settlement> current = new Result<>();
-        handler.recordSettlement(GROUP, OTHER, ME, 100,"", current);
+        handler.recordSettlement(GROUP, OTHER, ME, 100, "", current);
         assertFailed(current, SplitSmartException.Code.NOT_A_MEMBER);
         assertEquals(0, repo.settlementCount);
     }
@@ -384,9 +395,11 @@ public class DefaultExpenseHandlerTest {
         assertEquals(1, repo.deleteCount);
         assertNull(repo.findExpenseById("e1"));
 
-        // settlement: saved with the current user as recorder
+        // settlement: saved with the current user as recorder. ME paid this expense, so OTHER
+        // owes ME exactly $5.00, and a $5.00 payment (the whole debt) is allowed.
+        repo.seedExpense("e2", ME);
         Result<Settlement> settle = new Result<>();
-        handler.recordSettlement(GROUP, OTHER, ME, 500,"", settle);
+        handler.recordSettlement(GROUP, OTHER, ME, 500, "", settle);
         assertSucceeded(settle);
         assertEquals(1, repo.settlementCount);
         assertEquals(ME, repo.lastRecorderId);
@@ -404,7 +417,7 @@ public class DefaultExpenseHandlerTest {
     private static ExpenseDraft newDraft(String groupId, String payerId, String description,
                                          long totalCents, Category category, SplitType splitType,
                                          LocalDate date, Map<String, Long> allocations) {
-        return new ExpenseDraft(groupId, payerId, description,"", totalCents, category, splitType,
+        return new ExpenseDraft(groupId, payerId, description, "", totalCents, category, splitType,
                 date, allocations);
     }
 
@@ -496,7 +509,7 @@ public class DefaultExpenseHandlerTest {
             List<ExpenseShare> shares = new ArrayList<>();
             shares.add(new ExpenseShare(id, ME, 500L, null));
             shares.add(new ExpenseShare(id, OTHER, 500L, null));
-            Expense e = new Expense(id, GROUP, creatorId, creatorId, "Seeded","", 1000L,
+            Expense e = new Expense(id, GROUP, creatorId, creatorId, "Seeded", "", 1000L,
                     Category.values()[0], SplitType.EQUAL, DATE, CREATED, shares);
             expenses.put(id, e);
             return e;
@@ -568,18 +581,19 @@ public class DefaultExpenseHandlerTest {
             throw new UnsupportedOperationException();
         }
 
+        /** No settlements are ever stored here, so the handler's debt check sees none. */
         @Override public List<Settlement> findSettlementsByGroup(String groupId) {
-            throw new UnsupportedOperationException();
+            return new ArrayList<>();
         }
 
         @Override public List<Expense> findExpensesByGroupAndMonth(String groupId, YearMonth month) {
             throw new UnsupportedOperationException();
         }
 
-
-        /** Returns null: Settlement's not used in this test file */
+        /** Returns null: nothing here needs the Settlement object, so tests check the recorded args. */
         @Override public Settlement saveSettlement(String groupId, String recorderId, String payerId,
-                                         String receiverId, long amountCents, String note, Instant when) {
+                                                   String receiverId, long amountCents, String note,
+                                                   Instant when) {
             settlementCount++;
             lastRecorderId = recorderId;
             lastPayerId = payerId;
@@ -588,20 +602,18 @@ public class DefaultExpenseHandlerTest {
             return null;
         }
 
-        @Override public Settlement updateSettlement(String settlementId, String payerId, String receiverId, long amountCents, String note) {
-            return null;
+        @Override public Settlement updateSettlement(String settlementId, String payerId,
+                                                     String receiverId, long amountCents, String note) {
+            throw new UnsupportedOperationException();
         }
 
         @Override public void deleteSettlement(String settlementId) {
-            return;
+            throw new UnsupportedOperationException();
         }
 
         @Override public Settlement findSettlementById(String settlementId) {
-            return null;
+            throw new UnsupportedOperationException();
         }
-
-
-
     }
 }
  
