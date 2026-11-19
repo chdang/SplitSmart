@@ -45,6 +45,8 @@ public class DefaultGroupHandlerOwnerCheckTest {
     private Context context;
     private SplitSmartDatabase database;
     private SqliteGroupRepository groups;
+    private SqliteUserRepository users;
+    private SessionStore sessions;
     private DefaultGroupHandler handler;
 
     @Before
@@ -53,19 +55,22 @@ public class DefaultGroupHandlerOwnerCheckTest {
         context.deleteDatabase("splitsmart.db");
         database = new SplitSmartDatabase(context);
         groups = new SqliteGroupRepository(database);
-        SqliteUserRepository users = new SqliteUserRepository(database);
+        users = new SqliteUserRepository(database);
+        sessions = new SessionStore(context);
         handler = new DefaultGroupHandler(users, groups,
-                new DefaultSessionHandler(users, new SessionStore(context)));
+                new DefaultSessionHandler(users, sessions));
     }
 
     @After
     public void tearDown() {
+        sessions.clear();
         database.close();
         context.deleteDatabase("splitsmart.db");
     }
 
     @Test
     public void updateByNonOwnerFailsWithNotOwnerAndChangesNothing() {
+        logIn(ALEX);
         Group before = groups.findGroupById(GROUP);
 
         assertError(SplitSmartException.Code.NOT_OWNER, DefaultGroupHandlerOwnerCheckTest.<Group>await(
@@ -79,6 +84,7 @@ public class DefaultGroupHandlerOwnerCheckTest {
 
     @Test
     public void updateOfMissingGroupFailsWithNotFound() {
+        logIn(TOMMY);
         assertError(SplitSmartException.Code.NOT_FOUND, DefaultGroupHandlerOwnerCheckTest.<Group>await(
                 cb -> handler.updateGroup(MISSING, TOMMY, "Name", "Description",
                         Collections.emptyList(), cb)));
@@ -86,6 +92,7 @@ public class DefaultGroupHandlerOwnerCheckTest {
 
     @Test
     public void updateByOwnerStillSucceeds() {
+        logIn(TOMMY);
         Group updated = DefaultGroupHandlerOwnerCheckTest.<Group>await(
                 cb -> handler.updateGroup(GROUP, TOMMY, "Renamed", "Changed",
                         Collections.emptyList(), cb)).value();
@@ -96,6 +103,7 @@ public class DefaultGroupHandlerOwnerCheckTest {
 
     @Test
     public void deleteByNonOwnerFailsWithNotOwnerAndKeepsGroup() {
+        logIn(ALEX);
         assertError(SplitSmartException.Code.NOT_OWNER, DefaultGroupHandlerOwnerCheckTest.<Void>await(
                 cb -> handler.deleteGroup(GROUP, ALEX, cb)));
 
@@ -104,16 +112,23 @@ public class DefaultGroupHandlerOwnerCheckTest {
 
     @Test
     public void deleteOfMissingGroupFailsWithNotFound() {
+        logIn(TOMMY);
         assertError(SplitSmartException.Code.NOT_FOUND, DefaultGroupHandlerOwnerCheckTest.<Void>await(
                 cb -> handler.deleteGroup(MISSING, TOMMY, cb)));
     }
 
     @Test
     public void deleteByOwnerStillSucceeds() {
+        logIn(TOMMY);
         DefaultGroupHandlerOwnerCheckTest.<Void>await(
                 cb -> handler.deleteGroup(GROUP, TOMMY, cb)).value();
 
         assertNull(groups.findGroupById(GROUP));
+    }
+
+    /** updateGroup and deleteGroup only act for the logged-in user, so log the actor in. */
+    private void logIn(String userId) {
+        sessions.setCurrentUser(users.findById(userId));
     }
 
     private static void assertError(SplitSmartException.Code code, Result<?> result) {
