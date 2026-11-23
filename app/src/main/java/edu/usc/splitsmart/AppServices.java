@@ -5,6 +5,7 @@ import android.content.Context;
 import edu.usc.splitsmart.logic.DefaultGroupHandler;
 import edu.usc.splitsmart.logic.DefaultExpenseHandler;
 import edu.usc.splitsmart.logic.DefaultMemberAuthenticationHandler;
+import edu.usc.splitsmart.logic.DefaultReceiptHandler;
 import edu.usc.splitsmart.logic.DefaultSessionHandler;
 import edu.usc.splitsmart.logic.DefaultUpdateUserNameHandler;
 import edu.usc.splitsmart.logic.DefaultUserGroupBalanceHandler;
@@ -12,12 +13,14 @@ import edu.usc.splitsmart.logic.DefaultUserSignUpHandler;
 import edu.usc.splitsmart.logic.ExpenseHandler;
 import edu.usc.splitsmart.logic.GroupHandler;
 import edu.usc.splitsmart.logic.MemberAuthenticationHandler;
+import edu.usc.splitsmart.logic.ReceiptHandler;
 import edu.usc.splitsmart.logic.SessionHandler;
 import edu.usc.splitsmart.logic.UpdateUserNameHandler;
 import edu.usc.splitsmart.logic.UserGroupBalanceHandler;
 import edu.usc.splitsmart.logic.UserSignUpHandler;
 import edu.usc.splitsmart.repository.GroupRepository;
 import edu.usc.splitsmart.repository.SessionStore;
+import edu.usc.splitsmart.repository.SqliteReceiptRepository;
 import edu.usc.splitsmart.repository.SplitSmartDatabase;
 import edu.usc.splitsmart.repository.SqliteGroupRepository;
 import edu.usc.splitsmart.repository.SqliteUserRepository;
@@ -41,6 +44,7 @@ public final class AppServices {
 
     // Role 4
     private static ExpenseHandler expenses;
+    private static ReceiptHandler receipts;
 
     // Role 5
     private static UserGroupBalanceHandler balances;
@@ -63,6 +67,7 @@ public final class AppServices {
         membership = new DefaultMemberAuthenticationHandler(groups);
 
         expenses = new DefaultExpenseHandler(groups, session);
+        receipts = new DefaultReceiptHandler(groups, new SqliteReceiptRepository(database), session);
         balances = new DefaultUserGroupBalanceHandler(groupHandler, membership, expenses, groups);
     }
 
@@ -88,6 +93,10 @@ public final class AppServices {
 
     public static ExpenseHandler expenses() {
         return expenses;
+    }
+
+    public static ReceiptHandler receipts() {
+        return receipts;
     }
 
     public static UserGroupBalanceHandler balances() {

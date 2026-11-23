@@ -38,4 +38,5 @@
     <string name="error_invalid_split">The shares don\'t add up to the total</string>
     <string name="error_not_found">This was deleted or doesn\'t exist anymore</string>
     <string name="error_invalid_input">Check the highlighted fields and try again</string>
+    <string name="error_invalid_receipt">That photo is too large or couldn\'t be read. Try a different one.</string>
 </resources>

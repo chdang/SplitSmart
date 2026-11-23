@@ -39,7 +39,9 @@ public class SplitSmartException extends Exception {
         /** The group, expense, or user doesn't exist. */
         NOT_FOUND,
         /** A required field is blank or malformed. */
-        INVALID_INPUT
+        INVALID_INPUT,
+        /** A receipt image is missing, empty, or too large to store. */
+        INVALID_RECEIPT
     }
 
     private final Code code;

@@ -14,8 +14,8 @@ import edu.usc.splitsmart.model.User;
 import edu.usc.splitsmart.ui.common.Extras;
 
 /**
- * EditExpenseForm: shows an expense. Its creator can edit or delete it; everyone else sees it
- * read-only (R7, R14).
+ * EditExpenseForm: shows an expense and its receipts. Its creator can edit or delete it and
+ * attach or remove receipts; everyone else in the group sees it read-only (R7, R14).
  */
 public class EditExpenseActivity extends ExpenseFormActivity {
 
@@ -51,6 +51,7 @@ public class EditExpenseActivity extends ExpenseFormActivity {
                     onUi(isCreator -> {
                         setLoading(false);
                         showPermissions(Boolean.TRUE.equals(isCreator));
+                        receipts.showSaved(expenseId, currentUser.getId());
                     }, this::closeWithError));
         }, this::closeWithError));
     }

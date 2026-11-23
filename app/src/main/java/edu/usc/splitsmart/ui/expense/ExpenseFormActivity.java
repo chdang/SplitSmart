@@ -75,6 +75,7 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
     protected TextView readOnlyBanner;
     protected Button saveButton;
     protected Button deleteButton;
+    protected ReceiptSection receipts;
 
     private User payer;
     private Category category = Category.OTHER;
@@ -123,6 +124,8 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
         neutralStatusColor = splitStatus.getTextColors();
         saveButton = findViewById(R.id.save_button);
         deleteButton = findViewById(R.id.delete_button);
+        receipts = new ReceiptSection(this, this::showMessage);
+        receipts.restoreState(restoredForm);
 
         // These show values this class tracks itself, so it restores them after rotation.
         payerInput.setSaveEnabled(false);
@@ -244,6 +247,7 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
             row.setEditable(canEdit);
         }
         saveButton.setVisibility(canEdit ? View.VISIBLE : View.GONE);
+        receipts.setEditable(canEdit);
     }
 
     /** Shows the loading bar and stops double taps while a save or delete is in progress. */
@@ -251,6 +255,7 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
         setLoading(saving);
         saveButton.setEnabled(!saving);
         deleteButton.setEnabled(!saving);
+        receipts.setBusy(saving);
     }
 
     // ---------------------------------------------------------------------------------------
@@ -606,7 +611,17 @@ public abstract class ExpenseFormActivity extends GroupScopedActivity {
         }
         form.putStringArrayList("checked", checkedIds);
         form.putStringArrayList("values", values);
+        receipts.saveState(form);
         outState.putBundle(STATE_FORM, form);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (isFinishing() && receipts != null) {
+            // Photos picked but never saved with an expense aren't needed anymore.
+            receipts.discardPending();
+        }
     }
 
     private void restoreForm(Bundle form) {

@@ -56,6 +56,12 @@ Role 5 can call `ExpenseHandler.getExpenses(groupId, userId, fromDate, toDate, c
 
 The existing `recordSettlement` entry point delegates to Role 3's real settlement repository. Role 5's balances and history read these persistent settlements from the same repository.
 
+## Receipts
+
+The expense form has a Receipts section. While adding an expense, the creator can attach photos from the system photo picker. Those photos are saved together with the expense. While editing, attaching or deleting a receipt is saved immediately. Tapping a thumbnail opens the full image. Every member of the group can view receipts. Only the expense's creator can add or delete them, which is the same rule that applies to editing the expense.
+
+Photos are shrunk to 1600 px on the long side and stored as JPEG `BLOB`s (≤ 1 MB each) in the `receipts` table, which database version 4 adds. That table's `expense_id` foreign key cascades, so deleting an expense or its group also deletes its receipts. Permission checks are in `DefaultReceiptHandler`, and SQL is in `SqliteReceiptRepository`. `ReceiptIntegrationTest` (Robolectric, real SQLite) and `ReceiptManagementEspressoTest` (on-device, with the photo picker stubbed through Espresso-Intents) cover this.
+
 ## Tests
 
 Run `./gradlew testDebugUnitTest` for split-calculator tests and Robolectric integration tests using SQLite. They cover rounding, large amounts, invalid inputs, current-user and creator permissions, inclusive filters, persistence after reopening, share replacement/deletion, and transaction rollback. Run `./gradlew assembleDebug` to build the app.

@@ -17,7 +17,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public final class SplitSmartDatabase extends SQLiteOpenHelper {
 
     private static final String NAME = "splitsmart.db";
-    private static final int VERSION = 3;
+    private static final int VERSION = 4;
 
     /** "groups" is a SQLite keyword, so the table is named split_groups. */
     public static final String GROUPS = "split_groups";
@@ -27,6 +27,7 @@ public final class SplitSmartDatabase extends SQLiteOpenHelper {
     public static final String EXPENSES = "expenses";
     public static final String EXPENSE_SHARES = "expense_shares";
     public static final String SETTLEMENTS = "settlements";
+    public static final String RECEIPTS = "receipts";
 
     public SplitSmartDatabase(Context context) {
         super(context.getApplicationContext(), NAME, null, VERSION);
@@ -95,6 +96,8 @@ public final class SplitSmartDatabase extends SQLiteOpenHelper {
                 + "note TEXT NOT NULL DEFAULT '', "
                 + "settled_at INTEGER NOT NULL)");
 
+        createReceipts(db);
+
         db.execSQL("CREATE INDEX idx_members_user ON " + GROUP_MEMBERS + "(user_id)");
         db.execSQL("CREATE INDEX idx_expenses_group ON " + EXPENSES + "(group_id)");
         db.execSQL("CREATE INDEX idx_shares_expense ON " + EXPENSE_SHARES + "(expense_id)");
@@ -117,5 +120,22 @@ public final class SplitSmartDatabase extends SQLiteOpenHelper {
             db.execSQL("ALTER TABLE " + SETTLEMENTS
                     + " ADD COLUMN note TEXT NOT NULL DEFAULT ''");
         }
+        if (oldVersion < 4) {
+            createReceipts(db);
+        }
+    }
+
+    /**
+     * Receipt photos, stored as compressed JPEG bytes so they live and die with the expense:
+     * deleting an expense (or its whole group) removes its receipts too.
+     */
+    private static void createReceipts(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE " + RECEIPTS + " ("
+                + "id TEXT PRIMARY KEY, "
+                + "expense_id TEXT NOT NULL REFERENCES " + EXPENSES + "(id) ON DELETE CASCADE, "
+                + "uploader_id TEXT NOT NULL REFERENCES " + USERS + "(id), "
+                + "image BLOB NOT NULL, "
+                + "added_at INTEGER NOT NULL)");
+        db.execSQL("CREATE INDEX idx_receipts_expense ON " + RECEIPTS + "(expense_id)");
     }
 }

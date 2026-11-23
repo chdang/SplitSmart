@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="receipts_title">Receipts</string>
+    <string name="receipts_empty">No receipts attached</string>
+    <string name="receipt_add">Attach receipt</string>
+    <string name="receipt_thumbnail">Receipt %1$d</string>
+    <string name="receipt_view_title">Receipt</string>
+    <string name="receipt_close">Close</string>
+    <string name="receipt_delete">Delete receipt</string>
+    <string name="receipt_delete_title">Delete this receipt?</string>
+    <string name="receipt_delete_message">The photo will be removed from this expense for everyone in the group.</string>
+    <string name="receipt_attached">Receipt attached</string>
+    <string name="receipt_deleted">Receipt deleted</string>
+    <string name="receipt_unreadable">That image couldn\'t be opened. Try a different photo.</string>
+    <string name="receipt_save_failed">The expense was saved, but its receipts weren\'t. Open the expense to attach them again.</string>
+</resources>

@@ -54,6 +54,8 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+    // Stubs the system photo picker in the receipt tests.
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.7.0")
 }
 
 // Robolectric loads app classes through its own class loader, which JaCoCo skips unless told
