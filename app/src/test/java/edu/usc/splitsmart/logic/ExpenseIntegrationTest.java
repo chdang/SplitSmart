@@ -392,8 +392,9 @@ public class ExpenseIntegrationTest {
         db.execSQL("DROP TABLE settlements");
         db.execSQL("ALTER TABLE legacy_settlements RENAME TO settlements");
         db.execSQL("CREATE INDEX idx_settlements_group ON settlements(group_id)");
-        // Version 1 had no receipts table; version 4 added it.
+        // Version 1 had no receipts or reminders tables; versions 4 and 5 added them.
         db.execSQL("DROP TABLE receipts");
+        db.execSQL("DROP TABLE reminders");
         db.setVersion(1);
         database.close();
 
@@ -401,7 +402,7 @@ public class ExpenseIntegrationTest {
         groups = new SqliteGroupRepository(database);
         users = new SqliteUserRepository(database);
         Expense retained = groups.findExpenseById(created.getId());
-        assertEquals(4, database.getReadableDatabase().getVersion());
+        assertEquals(5, database.getReadableDatabase().getVersion());
         assertNotNull(users.findById(TOMMY));
         assertTrue(groups.isMember(GROUP, TOMMY));
         assertEquals(1000, retained.getTotalCents());

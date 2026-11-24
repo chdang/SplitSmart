@@ -62,6 +62,14 @@ The expense form has a Receipts section. While adding an expense, the creator ca
 
 Photos are shrunk to 1600 px on the long side and stored as JPEG `BLOB`s (≤ 1 MB each) in the `receipts` table, which database version 4 adds. That table's `expense_id` foreign key cascades, so deleting an expense or its group also deletes its receipts. Permission checks are in `DefaultReceiptHandler`, and SQL is in `SqliteReceiptRepository`. `ReceiptIntegrationTest` (Robolectric, real SQLite) and `ReceiptManagementEspressoTest` (on-device, with the photo picker stubbed through Espresso-Intents) cover this.
 
+## Reminders
+
+On the **Who owes whom** screen, each member who owes you money has a **Remind** button. After you confirm, they get an in-app payment reminder for what they owe you right now, after expenses and settlements are netted. Members who owe you nothing don't get the button. If they pay you back before you press it, you see a message and the balances refresh.
+
+Reminders you've received are in the bell icon on the groups screen. A banner there shows how many are unread. Each reminder shows who sent it, the amount, the group, and the date it was sent. Unread reminders are bold and marked **New**. You can mark each one as read or unread. Tapping a reminder marks it read and opens that group's balances so you can settle up.
+
+Reminders are stored in the `reminders` table, which database version 5 adds. A reminder keeps the amount from when it was sent, and deleting its group deletes it. `DefaultReminderHandler` checks who may remind whom, reusing the balance netting from `DefaultUserGroupBalanceHandler`. Only the recipient can change a reminder's read state. `ReminderIntegrationTest` (Robolectric, real SQLite) and `PaymentReminderEspressoTest` (on-device) cover this.
+
 ## Tests
 
 Run `./gradlew testDebugUnitTest` for split-calculator tests and Robolectric integration tests using SQLite. They cover rounding, large amounts, invalid inputs, current-user and creator permissions, inclusive filters, persistence after reopening, share replacement/deletion, and transaction rollback. Run `./gradlew assembleDebug` to build the app.

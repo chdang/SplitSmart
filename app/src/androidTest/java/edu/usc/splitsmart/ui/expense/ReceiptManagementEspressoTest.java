@@ -107,6 +107,9 @@ public class ReceiptManagementEspressoTest {
 
     @Before
     public void setUp() throws Exception {
+        // Other test classes delete the database file between tests, which leaves the app's
+        // open connection pointing at a removed file. Reopen it so this class works in any order.
+        instrumentation.runOnMainSync(() -> AppServices.init(context));
         alexId = loginAs(ALEX_EMAIL).getId();
         tommyId = loginAs(TOMMY_EMAIL).getId();   // Tommy is the user under test.
         Group group = call(cb -> AppServices.groups().createGroup(tommyId,

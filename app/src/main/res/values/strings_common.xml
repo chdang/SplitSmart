@@ -39,4 +39,5 @@
     <string name="error_not_found">This was deleted or doesn\'t exist anymore</string>
     <string name="error_invalid_input">Check the highlighted fields and try again</string>
     <string name="error_invalid_receipt">That photo is too large or couldn\'t be read. Try a different one.</string>
+    <string name="error_nothing_owed">They don\'t owe you anything in this group right now, so there\'s nothing to remind them about.</string>
 </resources>

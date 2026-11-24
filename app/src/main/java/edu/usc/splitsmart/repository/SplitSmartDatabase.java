@@ -17,7 +17,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public final class SplitSmartDatabase extends SQLiteOpenHelper {
 
     private static final String NAME = "splitsmart.db";
-    private static final int VERSION = 4;
+    private static final int VERSION = 5;
 
     /** "groups" is a SQLite keyword, so the table is named split_groups. */
     public static final String GROUPS = "split_groups";
@@ -28,6 +28,7 @@ public final class SplitSmartDatabase extends SQLiteOpenHelper {
     public static final String EXPENSE_SHARES = "expense_shares";
     public static final String SETTLEMENTS = "settlements";
     public static final String RECEIPTS = "receipts";
+    public static final String REMINDERS = "reminders";
 
     public SplitSmartDatabase(Context context) {
         super(context.getApplicationContext(), NAME, null, VERSION);
@@ -97,6 +98,7 @@ public final class SplitSmartDatabase extends SQLiteOpenHelper {
                 + "settled_at INTEGER NOT NULL)");
 
         createReceipts(db);
+        createReminders(db);
 
         db.execSQL("CREATE INDEX idx_members_user ON " + GROUP_MEMBERS + "(user_id)");
         db.execSQL("CREATE INDEX idx_expenses_group ON " + EXPENSES + "(group_id)");
@@ -123,6 +125,9 @@ public final class SplitSmartDatabase extends SQLiteOpenHelper {
         if (oldVersion < 4) {
             createReceipts(db);
         }
+        if (oldVersion < 5) {
+            createReminders(db);
+        }
     }
 
     /**
@@ -137,5 +142,21 @@ public final class SplitSmartDatabase extends SQLiteOpenHelper {
                 + "image BLOB NOT NULL, "
                 + "added_at INTEGER NOT NULL)");
         db.execSQL("CREATE INDEX idx_receipts_expense ON " + RECEIPTS + "(expense_id)");
+    }
+
+    /**
+     * Payment reminders between members. They belong to a group, so deleting the group deletes
+     * them. is_read is 0 or 1; the recipient can flip it either way.
+     */
+    private static void createReminders(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE " + REMINDERS + " ("
+                + "id TEXT PRIMARY KEY, "
+                + "group_id TEXT NOT NULL REFERENCES " + GROUPS + "(id) ON DELETE CASCADE, "
+                + "sender_id TEXT NOT NULL REFERENCES " + USERS + "(id), "
+                + "recipient_id TEXT NOT NULL REFERENCES " + USERS + "(id), "
+                + "amount_cents INTEGER NOT NULL, "
+                + "sent_at INTEGER NOT NULL, "
+                + "is_read INTEGER NOT NULL DEFAULT 0)");
+        db.execSQL("CREATE INDEX idx_reminders_recipient ON " + REMINDERS + "(recipient_id)");
     }
 }

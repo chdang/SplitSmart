@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_reminders"
+        android:icon="@drawable/ic_notifications"
+        android:title="@string/reminders_title"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/action_profile"
         android:icon="@drawable/ic_person"
         android:title="@string/profile_title"

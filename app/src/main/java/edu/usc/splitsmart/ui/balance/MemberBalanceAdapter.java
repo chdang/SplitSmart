@@ -37,11 +37,17 @@ final class MemberBalanceAdapter extends RecyclerView.Adapter<MemberBalanceAdapt
         void settleUp(User member, long owedCents);
     }
 
+    interface OnRemind {
+        void remind(User member, long owedCents);
+    }
+
     private final List<Row> rows = new ArrayList<>();
     private final OnSettleUp onSettleUp;
+    private final OnRemind onRemind;
 
-    MemberBalanceAdapter(OnSettleUp onSettleUp) {
+    MemberBalanceAdapter(OnSettleUp onSettleUp, OnRemind onRemind) {
         this.onSettleUp = onSettleUp;
+        this.onRemind = onRemind;
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -69,17 +75,24 @@ final class MemberBalanceAdapter extends RecyclerView.Adapter<MemberBalanceAdapt
                     Money.format(row.netCents)));
             holder.status.setTextColor(ContextCompat.getColor(context, R.color.money_owed_to_you));
             holder.settleButton.setVisibility(View.GONE);
+            holder.remindButton.setVisibility(View.VISIBLE);
+            holder.remindButton.setContentDescription(context.getString(
+                    R.string.reminder_send_to, row.member.getName()));
+            holder.remindButton.setOnClickListener(v ->
+                    onRemind.remind(row.member, row.netCents));
         } else if (row.netCents < 0) {
             holder.status.setText(context.getString(R.string.individual_you_owe,
                     Money.format(-row.netCents)));
             holder.status.setTextColor(ContextCompat.getColor(context, R.color.money_you_owe));
             holder.settleButton.setVisibility(View.VISIBLE);
+            holder.remindButton.setVisibility(View.GONE);
             holder.settleButton.setOnClickListener(v ->
                     onSettleUp.settleUp(row.member, -row.netCents));
         } else {
             holder.status.setText(R.string.individual_even);
             holder.status.setTextColor(holder.neutralColor);
             holder.settleButton.setVisibility(View.GONE);
+            holder.remindButton.setVisibility(View.GONE);
         }
     }
 
@@ -92,6 +105,7 @@ final class MemberBalanceAdapter extends RecyclerView.Adapter<MemberBalanceAdapt
         final TextView name;
         final TextView status;
         final View settleButton;
+        final View remindButton;
         final ColorStateList neutralColor;
 
         Holder(View view) {
@@ -99,6 +113,7 @@ final class MemberBalanceAdapter extends RecyclerView.Adapter<MemberBalanceAdapt
             name = view.findViewById(R.id.member_name);
             status = view.findViewById(R.id.balance_status);
             settleButton = view.findViewById(R.id.settle_button);
+            remindButton = view.findViewById(R.id.remind_button);
             neutralColor = status.getTextColors();
         }
     }

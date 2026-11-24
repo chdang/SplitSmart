@@ -251,9 +251,11 @@ public class ReceiptIntegrationTest {
     public void upgradeFromVersion3_addsReceiptsTableWithoutLosingExpenses() {
         Expense expense = createExpense();
         SQLiteDatabase db = database.getWritableDatabase();
+        // Version 3 had neither receipts nor reminders (version 5).
         db.execSQL("DROP TABLE " + SplitSmartDatabase.RECEIPTS);
+        db.execSQL("DROP TABLE " + SplitSmartDatabase.REMINDERS);
 
-        database.onUpgrade(db, 3, 4);
+        database.onUpgrade(db, 3, 5);
 
         assertNotNull(groups.findExpenseById(expense.getId()));
         ReceiptIntegrationTest.<List<Receipt>>ok(cb -> receipts.addReceipts(expense.getId(), TOMMY, Collections.singletonList(IMAGE_A), cb));

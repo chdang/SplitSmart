@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,12 +17,14 @@ import edu.usc.splitsmart.model.Group;
 import edu.usc.splitsmart.ui.common.BaseActivity;
 import edu.usc.splitsmart.ui.common.Extras;
 import edu.usc.splitsmart.ui.profile.ProfileActivity;
+import edu.usc.splitsmart.ui.reminder.RemindersActivity;
 
 /** The home screen after login: every group the user is in. */
 public class GroupListActivity extends BaseActivity {
 
     private GroupListAdapter adapter;
     private View emptyView;
+    private View remindersBanner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +43,9 @@ public class GroupListActivity extends BaseActivity {
 
         findViewById(R.id.new_group_button).setOnClickListener(v ->
                 startActivity(new Intent(this, NewGroupActivity.class)));
+
+        remindersBanner = findViewById(R.id.reminders_banner);
+        remindersBanner.setOnClickListener(v -> openReminders());
     }
 
     @Override
@@ -55,6 +61,17 @@ public class GroupListActivity extends BaseActivity {
             adapter.submit(groups);
             emptyView.setVisibility(groups.isEmpty() ? View.VISIBLE : View.GONE);
         }));
+        showUnreadReminders();
+    }
+
+    /** Shows the banner while there are unread reminders. A failed count just hides it. */
+    private void showUnreadReminders() {
+        AppServices.reminders().getUnreadCount(onUi(unread -> {
+            remindersBanner.setVisibility(unread > 0 ? View.VISIBLE : View.GONE);
+            TextView text = findViewById(R.id.reminders_banner_text);
+            text.setText(getResources().getQuantityString(R.plurals.reminders_unread_banner,
+                    unread, unread));
+        }, error -> remindersBanner.setVisibility(View.GONE)));
     }
 
     @Override
@@ -65,11 +82,19 @@ public class GroupListActivity extends BaseActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_reminders) {
+            openReminders();
+            return true;
+        }
         if (item.getItemId() == R.id.action_profile) {
             startActivity(new Intent(this, ProfileActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openReminders() {
+        startActivity(new Intent(this, RemindersActivity.class));
     }
 
     private void openGroup(Group group) {

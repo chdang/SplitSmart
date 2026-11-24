@@ -49,6 +49,8 @@ public final class ErrorMessages {
                 return context.getString(R.string.error_invalid_input);
             case INVALID_RECEIPT:
                 return context.getString(R.string.error_invalid_receipt);
+            case NOTHING_OWED:
+                return context.getString(R.string.error_nothing_owed);
             default:
                 return context.getString(R.string.error_generic);
         }

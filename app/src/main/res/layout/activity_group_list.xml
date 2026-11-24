@@ -12,14 +12,49 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/group_list"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingHorizontal="16dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="96dp" />
+            android:orientation="vertical">
+
+            <!-- Shown only while the user has unread payment reminders. -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/reminders_banner"
+                style="@style/Widget.Material3.CardView.Filled"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                app:cardBackgroundColor="?attr/colorSecondaryContainer">
+
+                <TextView
+                    android:id="@+id/reminders_banner_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="12dp"
+                    android:gravity="center_vertical"
+                    android:padding="16dp"
+                    android:textAppearance="?attr/textAppearanceTitleSmall"
+                    android:textColor="?attr/colorOnSecondaryContainer"
+                    app:drawableStartCompat="@drawable/ic_notifications"
+                    app:drawableTint="?attr/colorOnSecondaryContainer" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/group_list"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="96dp" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/empty_view"

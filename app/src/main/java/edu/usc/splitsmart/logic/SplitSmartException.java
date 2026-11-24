@@ -41,7 +41,9 @@ public class SplitSmartException extends Exception {
         /** A required field is blank or malformed. */
         INVALID_INPUT,
         /** A receipt image is missing, empty, or too large to store. */
-        INVALID_RECEIPT
+        INVALID_RECEIPT,
+        /** A payment reminder was sent to someone who doesn't owe the sender anything. */
+        NOTHING_OWED
     }
 
     private final Code code;

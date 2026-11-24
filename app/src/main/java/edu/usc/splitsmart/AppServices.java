@@ -6,6 +6,7 @@ import edu.usc.splitsmart.logic.DefaultGroupHandler;
 import edu.usc.splitsmart.logic.DefaultExpenseHandler;
 import edu.usc.splitsmart.logic.DefaultMemberAuthenticationHandler;
 import edu.usc.splitsmart.logic.DefaultReceiptHandler;
+import edu.usc.splitsmart.logic.DefaultReminderHandler;
 import edu.usc.splitsmart.logic.DefaultSessionHandler;
 import edu.usc.splitsmart.logic.DefaultUpdateUserNameHandler;
 import edu.usc.splitsmart.logic.DefaultUserGroupBalanceHandler;
@@ -14,6 +15,7 @@ import edu.usc.splitsmart.logic.ExpenseHandler;
 import edu.usc.splitsmart.logic.GroupHandler;
 import edu.usc.splitsmart.logic.MemberAuthenticationHandler;
 import edu.usc.splitsmart.logic.ReceiptHandler;
+import edu.usc.splitsmart.logic.ReminderHandler;
 import edu.usc.splitsmart.logic.SessionHandler;
 import edu.usc.splitsmart.logic.UpdateUserNameHandler;
 import edu.usc.splitsmart.logic.UserGroupBalanceHandler;
@@ -21,6 +23,7 @@ import edu.usc.splitsmart.logic.UserSignUpHandler;
 import edu.usc.splitsmart.repository.GroupRepository;
 import edu.usc.splitsmart.repository.SessionStore;
 import edu.usc.splitsmart.repository.SqliteReceiptRepository;
+import edu.usc.splitsmart.repository.SqliteReminderRepository;
 import edu.usc.splitsmart.repository.SplitSmartDatabase;
 import edu.usc.splitsmart.repository.SqliteGroupRepository;
 import edu.usc.splitsmart.repository.SqliteUserRepository;
@@ -48,6 +51,7 @@ public final class AppServices {
 
     // Role 5
     private static UserGroupBalanceHandler balances;
+    private static ReminderHandler reminders;
 
     private AppServices() {
     }
@@ -69,6 +73,8 @@ public final class AppServices {
         expenses = new DefaultExpenseHandler(groups, session);
         receipts = new DefaultReceiptHandler(groups, new SqliteReceiptRepository(database), session);
         balances = new DefaultUserGroupBalanceHandler(groupHandler, membership, expenses, groups);
+        reminders = new DefaultReminderHandler(groups, new SqliteReminderRepository(database),
+                session);
     }
 
     public static SessionHandler session() {
@@ -101,6 +107,10 @@ public final class AppServices {
 
     public static UserGroupBalanceHandler balances() {
         return balances;
+    }
+
+    public static ReminderHandler reminders() {
+        return reminders;
     }
 
     /**

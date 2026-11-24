@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="reminders_title">Reminders</string>
+    <string name="reminders_empty">No one has sent you a payment reminder.</string>
+    <plurals name="reminders_unread_banner">
+        <item quantity="one">You have %1$d unread payment reminder</item>
+        <item quantity="other">You have %1$d unread payment reminders</item>
+    </plurals>
+
+    <string name="reminder_send">Remind</string>
+    <string name="reminder_send_to">Remind %1$s</string>
+    <string name="reminder_confirm_title">Send a payment reminder?</string>
+    <string name="reminder_confirm_message">%1$s will see a reminder in the app that they owe you %2$s in this group.</string>
+    <string name="reminder_sent">Reminder sent to %1$s for %2$s</string>
+
+    <string name="reminder_message">%1$s reminded you to pay %2$s</string>
+    <string name="reminder_details">%1$s · Sent %2$s</string>
+    <string name="reminder_new">New</string>
+    <string name="reminder_mark_read">Mark as read</string>
+    <string name="reminder_mark_unread">Mark as unread</string>
+    <string name="reminder_marked_read">Marked as read</string>
+    <string name="reminder_marked_unread">Marked as unread</string>
+</resources>
