@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The only files shared with other apps: camera photos of receipts, while they're taken. -->
+<paths>
+    <cache-path
+        name="receipts_camera"
+        path="receipts_camera/" />
+</paths>

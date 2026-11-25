@@ -9,7 +9,12 @@
     <string name="receipt_delete">Delete receipt</string>
     <string name="receipt_delete_title">Delete this receipt?</string>
     <string name="receipt_delete_message">The photo will be removed from this expense for everyone in the group.</string>
-    <string name="receipt_attached">Receipt attached</string>
+    <string name="receipt_scan">Scan receipt</string>
+    <string name="receipt_scan_unavailable">This device can\'t scan receipts. Use Attach receipt to add a photo instead.</string>
+    <plurals name="receipts_attached">
+        <item quantity="one">Receipt attached</item>
+        <item quantity="other">%1$d receipts attached</item>
+    </plurals>
     <string name="receipt_deleted">Receipt deleted</string>
     <string name="receipt_unreadable">That image couldn\'t be opened. Try a different photo.</string>
     <string name="receipt_save_failed">The expense was saved, but its receipts weren\'t. Open the expense to attach them again.</string>

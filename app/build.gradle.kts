@@ -42,6 +42,9 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
+    // Receipt scanning: edge detection, cropping, and cleanup run inside Google Play services,
+    // so the app needs no camera permission of its own.
+    implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0")
 
     // Local unit tests (src/test)
     testImplementation("junit:junit:4.13.2")

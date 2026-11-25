@@ -58,9 +58,11 @@ The existing `recordSettlement` entry point delegates to Role 3's real settlemen
 
 ## Receipts
 
-The expense form has a Receipts section. While adding an expense, the creator can attach photos from the system photo picker. Those photos are saved together with the expense. While editing, attaching or deleting a receipt is saved immediately. Tapping a thumbnail opens the full image. Every member of the group can view receipts. Only the expense's creator can add or delete them, which is the same rule that applies to editing the expense.
+The expense form has a Receipts section. While adding an expense, the creator can attach photos from the system photo picker. Those photos are saved together with the expense. While editing, attaching or deleting a receipt is saved immediately. Tapping a thumbnail opens the full image.
 
-Photos are shrunk to 1600 px on the long side and stored as JPEG `BLOB`s (≤ 1 MB each) in the `receipts` table, which database version 4 adds. That table's `expense_id` foreign key cascades, so deleting an expense or its group also deletes its receipts. Permission checks are in `DefaultReceiptHandler`, and SQL is in `SqliteReceiptRepository`. `ReceiptIntegrationTest` (Robolectric, real SQLite) and `ReceiptManagementEspressoTest` (on-device, with the photo picker stubbed through Espresso-Intents) cover this.
+**Scan receipt** opens Google's document scanner from Google Play services. The scanner finds the receipt's edges, flattens and crops the image, and can capture up to five pages. Each page becomes its own receipt, and a multi-page scan is saved all together or not at all. On devices without Google Play services, the button opens the camera app instead. Neither path needs a camera permission. The camera hands its photo back through a `FileProvider` limited to one cache folder. Every member of the group can view receipts. Only the expense's creator can add or delete them, which is the same rule that applies to editing the expense.
+
+Photos are shrunk to 1600 px on the long side and stored as JPEG `BLOB`s (≤ 1 MB each) in the `receipts` table, which database version 4 adds. That table's `expense_id` foreign key cascades, so deleting an expense or its group also deletes its receipts. Permission checks are in `DefaultReceiptHandler`, and SQL is in `SqliteReceiptRepository`. `ReceiptIntegrationTest` (Robolectric, real SQLite) and `ReceiptManagementEspressoTest` (on-device, with the photo picker stubbed through Espresso-Intents) cover this. `ReceiptScanningEspressoTest` covers scanning through the camera fallback, because Espresso can't drive the document scanner, which runs in Play services.
 
 ## Reminders
 

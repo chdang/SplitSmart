@@ -39,8 +39,9 @@ import edu.usc.splitsmart.model.Receipt;
 import edu.usc.splitsmart.ui.common.ErrorMessages;
 
 /**
- * The Receipts part of the expense form: a row of thumbnails, an "Attach receipt" button, and
- * a viewer that opens when a thumbnail is tapped.
+ * The Receipts part of the expense form: a row of thumbnails, "Scan receipt" and "Attach
+ * receipt" buttons, and a viewer that opens when a thumbnail is tapped. A scan can add several
+ * pages at once; each page becomes its own receipt.
  *
  * <p>It works in two modes. While the expense hasn't been saved yet (NewExpenseForm), picked
  * photos wait as files in the cache and are uploaded by {@link #uploadPending} once the expense
@@ -73,7 +74,9 @@ final class ReceiptSection {
     private final View scroll;
     private final TextView empty;
     private final Button addButton;
+    private final Button scanButton;
     private final ActivityResultLauncher<PickVisualMediaRequest> picker;
+    private final ReceiptScanner scanner;
     private final List<Item> items = new ArrayList<>();
 
     /** Null until the expense exists; while null, new receipts are kept as pending files. */
@@ -82,7 +85,7 @@ final class ReceiptSection {
     private boolean editable = true;
     private boolean busy;
 
-    /** Must be created in onCreate, since it registers for the photo picker's result. */
+    /** Must be created in onCreate, since it registers for the picker's and scanner's results. */
     ReceiptSection(AppCompatActivity activity, Consumer<CharSequence> messages) {
         this.activity = activity;
         this.messages = messages;
@@ -90,11 +93,15 @@ final class ReceiptSection {
         scroll = activity.findViewById(R.id.receipts_scroll);
         empty = activity.findViewById(R.id.receipts_empty);
         addButton = activity.findViewById(R.id.add_receipt_button);
+        scanButton = activity.findViewById(R.id.scan_receipt_button);
         picker = activity.registerForActivityResult(
                 new ActivityResultContracts.PickVisualMedia(), this::onPicked);
         addButton.setOnClickListener(v -> picker.launch(new PickVisualMediaRequest.Builder()
                 .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
                 .build()));
+        scanner = new ReceiptScanner(activity, this::onImages, () ->
+                messages.accept(activity.getString(R.string.receipt_scan_unavailable)));
+        scanButton.setOnClickListener(v -> scanner.scan());
         render();
     }
 
@@ -175,6 +182,7 @@ final class ReceiptSection {
         for (File file : pendingFiles()) {
             file.delete();
         }
+        scanner.discard();
     }
 
     void saveState(Bundle out) {
@@ -208,21 +216,36 @@ final class ReceiptSection {
         if (uri == null) {
             return;   // the user backed out of the picker
         }
+        onImages(Collections.singletonList(uri));
+    }
+
+    /**
+     * Shrinks each picked photo or scanned page to a stored JPEG, then keeps them as pending
+     * files or saves them, all together. If any page can't be read, none are added.
+     */
+    private void onImages(List<Uri> uris) {
         setBusy(true);
         File pendingDir = new File(activity.getCacheDir(), "receipts_pending");
+        boolean keepPending = expenseId == null;
         WORKER.execute(() -> {
-            byte[] jpeg;
-            File file = null;
+            List<byte[]> jpegs = new ArrayList<>();
+            List<File> files = new ArrayList<>();
             try {
-                jpeg = ReceiptImages.encode(activity.getContentResolver(), uri);
-                if (expenseId == null) {
-                    file = writePending(pendingDir, jpeg);
+                for (Uri uri : uris) {
+                    jpegs.add(ReceiptImages.encode(activity.getContentResolver(), uri));
+                }
+                if (keepPending) {
+                    for (byte[] jpeg : jpegs) {
+                        files.add(writePending(pendingDir, jpeg));
+                    }
                 }
             } catch (IOException | RuntimeException unreadable) {
-                jpeg = null;
+                for (File file : files) {
+                    file.delete();
+                }
+                jpegs = null;
             }
-            byte[] result = jpeg;
-            File pendingFile = file;
+            List<byte[]> result = jpegs;
             activity.runOnUiThread(() -> {
                 if (isClosing()) {
                     return;
@@ -230,9 +253,11 @@ final class ReceiptSection {
                 if (result == null) {
                     setBusy(false);
                     messages.accept(activity.getString(R.string.receipt_unreadable));
-                } else if (pendingFile != null) {
+                } else if (keepPending) {
                     setBusy(false);
-                    items.add(new Item(null, pendingFile));
+                    for (File file : files) {
+                        items.add(new Item(null, file));
+                    }
                     render();
                 } else {
                     upload(result);
@@ -241,16 +266,16 @@ final class ReceiptSection {
         });
     }
 
-    private void upload(byte[] jpeg) {
-        AppServices.receipts().addReceipts(expenseId, actorId, Collections.singletonList(jpeg),
-                onUi(saved -> {
-                    setBusy(false);
-                    for (Receipt receipt : saved) {
-                        items.add(new Item(receipt, null));
-                    }
-                    render();
-                    messages.accept(activity.getString(R.string.receipt_attached));
-                }));
+    private void upload(List<byte[]> jpegs) {
+        AppServices.receipts().addReceipts(expenseId, actorId, jpegs, onUi(saved -> {
+            setBusy(false);
+            for (Receipt receipt : saved) {
+                items.add(new Item(receipt, null));
+            }
+            render();
+            messages.accept(activity.getResources().getQuantityString(
+                    R.plurals.receipts_attached, saved.size(), saved.size()));
+        }));
     }
 
     private static File writePending(File dir, byte[] jpeg) throws IOException {
@@ -381,8 +406,10 @@ final class ReceiptSection {
     }
 
     private void updateAddButton() {
-        addButton.setVisibility(editable ? View.VISIBLE : View.GONE);
-        addButton.setEnabled(!busy);
+        for (Button button : new Button[]{addButton, scanButton}) {
+            button.setVisibility(editable ? View.VISIBLE : View.GONE);
+            button.setEnabled(!busy);
+        }
     }
 
     private boolean isClosing() {

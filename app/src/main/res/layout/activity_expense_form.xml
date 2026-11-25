@@ -241,14 +241,29 @@
 
             </HorizontalScrollView>
 
-            <Button
-                android:id="@+id/add_receipt_button"
-                style="@style/Widget.Material3.Button.TextButton.Icon"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="@string/receipt_add"
-                app:icon="@drawable/ic_add" />
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/scan_receipt_button"
+                    style="@style/Widget.Material3.Button.TextButton.Icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/receipt_scan"
+                    app:icon="@drawable/ic_camera" />
+
+                <Button
+                    android:id="@+id/add_receipt_button"
+                    style="@style/Widget.Material3.Button.TextButton.Icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/receipt_add"
+                    app:icon="@drawable/ic_add" />
+
+            </LinearLayout>
 
             <Button
                 android:id="@+id/save_button"

@@ -95,6 +95,11 @@ public class ReceiptManagementEspressoTest {
     private static final String PASSWORD = "password";
     // Generous: the first test also pays for opening the database and hashing passwords.
     private static final long WAIT_MS = 20000;
+    /**
+     * Handler calls get longer: the first login after a fresh install creates the database and
+     * runs the deliberately slow password hashing, which can take well over 20 s on a busy host.
+     */
+    private static final long CALL_WAIT_MS = 60000;
 
     private final Context context = ApplicationProvider.getApplicationContext();
     private final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
@@ -354,7 +359,7 @@ public class ReceiptManagementEspressoTest {
                 latch.countDown();
             }
         }));
-        assertTrue("handler call timed out", latch.await(WAIT_MS, TimeUnit.MILLISECONDS));
+        assertTrue("handler call timed out", latch.await(CALL_WAIT_MS, TimeUnit.MILLISECONDS));
         if (error.get() != null) {
             throw error.get();
         }
